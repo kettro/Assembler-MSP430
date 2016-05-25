@@ -5,14 +5,12 @@
 #include <ctype.h>
 #include "token_data_structures.h"
 #include "symbol_table_data_structures.h"
-#include "inst_table.h"
 // Defines
 // Local Variables
 // Local Prototypes
 int ParseOperands(char* operand, OperandVal* val);
 // Extern Variables
 // Extern Prototypes
-int isInst(char* token);
 extern Symbol* getSymbol(char* name);
 extern int isLabel(char* token);
 // Defintions
@@ -21,7 +19,6 @@ extern int isLabel(char* token);
 int ParseOperands(char* operand, OperandVal* val)
 {
   Symbol* symbol_ptr;
-  Inst* inst_ptr;
   char* operand_ptr;
   char* register_ptr;
   char* alphanum_ptr;
@@ -107,7 +104,6 @@ int ParseOperands(char* operand, OperandVal* val)
           val->type0 = REGISTER;
           val->val0 = symbol_ptr->value;
           return 1;
-          // TODO: finish
         }
         symbol_ptr = getSymbol(alphanum_ptr); // get the symbol from the start of the string;
         switch(symbol_ptr->type){

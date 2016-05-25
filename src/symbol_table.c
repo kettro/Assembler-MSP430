@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <ctype.h>
 #include "symbol_table_data_structures.h"
 
 // Local Defines
@@ -15,6 +16,7 @@ void addSymbol(char* name, uint16_t value, SymbolType type);
 Symbol* getSymbol(char* name);
 int findUnknowns(Symbol* unknown_array[]);
 void initSymbolTable(void);
+int isLabel(char* token);
 // Extern Variables
 // Extern Prototypes
 // Definitions
@@ -122,4 +124,17 @@ void initSymbolTable(void)
   register_list[19].value = 14;
   strcpy(register_list[20].name, "R15");
   register_list[20].value = 15;
+}
+
+int isLabel(char* token)
+{
+  // if isalphanum
+  Symbol* symbol_ptr;
+  if(isalpha(*token)){
+    if((symbol_ptr = getSymbol(token)) != NULL && symbol_ptr->type != REGISTER){
+      // is a label!
+      return 1;
+    }
+  }
+  return 0;
 }

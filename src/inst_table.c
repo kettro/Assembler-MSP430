@@ -43,6 +43,9 @@ Inst inst_table[TOTAL_INSTRUCTIONS] = {
 // Local Function Prototypes
 void initInstTable(void);
 int isInst(char* token, Inst* return_inst);
+Inst* getInst(char* token);
+void handleInst(Inst* inst_ptr, char* token_array[]);
+
 // Extern Variables
 // Extern Function Prototypes
 // Definitions
@@ -130,3 +133,18 @@ int isInst(char* token, Inst* return_inst)
   return 0;
 }
 
+Inst* getInst(char* token)
+{
+  int i;
+  for(i = 0; i < TOTAL_INSTRUCTIONS; i++){
+    if(strcmp(token, inst_table[i].name) == 0){
+      return &(inst_table[i]);
+    }
+  }
+  return NULL;
+}
+
+void handleInst(Inst* inst_ptr, char* token_array[])
+{
+
+}

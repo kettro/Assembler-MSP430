@@ -8,7 +8,6 @@
 // Local Defines
 // Local Variables
 uint16_t location_counter = 0;
-uint16_t program_counter = 0;
 // Local Prototypes
 void initCounters(void);
 // Extern Variables
@@ -17,14 +16,12 @@ extern Symbol* getSymbol(char* name);
 extern void addSymbol(char* name, uint16_t value, SymbolType type);
 extern int findUnknowns(Symbol* unknown_array[]);
 extern void initSymbolTable(void);
-extern void initInstTable(void);
 // Definitions
 
 int main(void)
 {
   initCounters();
   initSymbolTable();
-  initInstTable();
 
   Symbol* symbol;
   addSymbol("a_Symbol", 99, KNOWN);
@@ -39,5 +36,4 @@ int main(void)
 void initCounters(void)
 {
   location_counter = 0;
-  program_counter = 0;
 }

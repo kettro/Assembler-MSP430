@@ -8,143 +8,111 @@
 // Defines
 // Local Variables
 Inst inst_table[TOTAL_INSTRUCTIONS] = {
-  {.opcode = 0x5000, .type = 2}, // add
-  {.opcode = 0x6000, .type = 2}, // addc
-  {.opcode = 0xF000, .type = 2}, // and
-  {.opcode = 0xC000, .type = 2}, // bic
-  {.opcode = 0xD000, .type = 2}, // bis
-  {.opcode = 0xB000, .type = 2}, // bit
-  {.opcode = 0x1280, .type = 1}, // call
-  {.opcode = 0x9000, .type = 2}, // cmp
-  {.opcode = 0xA000, .type = 2}, // dadd
-  {.opcode = 0x2C00, .type = 3}, // jc
-  {.opcode = 0x2400, .type = 3}, // jeq
-  {.opcode = 0x3400, .type = 3}, // jge
-  {.opcode = 0x2C00, .type = 3}, // jhs
-  {.opcode = 0x3800, .type = 3}, // jl
-  {.opcode = 0x2800, .type = 3}, // jlo
-  {.opcode = 0x3C00, .type = 3}, // jmp
-  {.opcode = 0x3000, .type = 3}, // jn
-  {.opcode = 0x2800, .type = 3}, // jnc
-  {.opcode = 0x2000, .type = 3}, // jne
-  {.opcode = 0x2000, .type = 3}, // jnz
-  {.opcode = 0x2400, .type = 3}, // jz
-  {.opcode = 0x4000, .type = 2}, // mov
-  {.opcode = 0x1200, .type = 1}, // push
-  {.opcode = 0x1300, .type = 0}, // reti
-  {.opcode = 0x1100, .type = 1}, // rra
-  {.opcode = 0x1000, .type = 1}, // rrc
-  {.opcode = 0x8000, .type = 2}, // sub
-  {.opcode = 0x7000, .type = 2}, // subc
-  {.opcode = 0x1080, .type = 1}, // swpb
-  {.opcode = 0x1180, .type = 1}, // sxt
-  {.opcode = 0xE000, .type = 2}, // xor
+  {"ADD",   0x5000, 2, WORD}, // add
+  {"ADD.B", 0x5000, 2, BYTE}, // add
+  {"ADD.W", 0x5000, 2, WORD}, // add
+  {"ADDC",  0x6000, 2, WORD}, // addc
+  {"ADDC.B",0x6000, 2, BYTE}, // addc
+  {"ADDC.W",0x6000, 2, WORD}, // addc
+  {"AND",   0xF000, 2, WORD}, // and
+  {"AND.B", 0xF000, 2, BYTE}, // and
+  {"AND.W", 0xF000, 2, WORD}, // and
+  {"BIC",   0xC000, 2, WORD}, // bic
+  {"BIC.B", 0xC000, 2, BYTE}, // bic
+  {"BIC.W", 0xC000, 2, WORD}, // bic
+  {"BIS",   0xD000, 2, WORD}, // bis
+  {"BIS.B", 0xD000, 2, BYTE}, // bis
+  {"BIS.W", 0xD000, 2, WORD}, // bis
+  {"BIT",   0xB000, 2, WORD}, // bit
+  {"BIT.B", 0xB000, 2, BYTE}, // bit
+  {"BIT.W", 0xB000, 2, WORD}, // bit
+  {"CALL",  0x1280, 1, }, // call
+  {"CMP",   0x9000, 2, WORD}, // cmp
+  {"CMP.B", 0x9000, 2, BYTE}, // cmp
+  {"CMP.W", 0x9000, 2, WORD}, // cmp
+  {"DADD",  0xA000, 2, WORD}, // dadd
+  {"DADD.B",0xA000, 2, BYTE}, // dadd
+  {"DADD.W",0xA000, 2, WORD}, // dadd
+  {"JC",    0x2C00, 3, }, // jc
+  {"JEQ",   0x2400, 3, }, // jeq
+  {"JGE",   0x3400, 3, }, // jge
+  {"JHS",   0x2C00, 3, }, // jhs
+  {"JL",    0x3800, 3, }, // jl
+  {"JLO",   0x2800, 3, }, // jlo
+  {"JMP",   0x3C00, 3, }, // jmp
+  {"JN",    0x3000, 3, }, // jn
+  {"JNC",   0x2800, 3, }, // jnc
+  {"JNE",   0x2000, 3, }, // jne
+  {"JNZ",   0x2000, 3, }, // jnz
+  {"JZ",    0x2400, 3, }, // jz
+  {"MOV",   0x4000, 2, WORD}, // mov
+  {"MOV.B", 0x4000, 2, BYTE}, // mov
+  {"MOV.W", 0x4000, 2, WORD}, // mov
+  {"PUSH",  0x1200, 1, WORD}, // push
+  {"PUSH.B",0x1200, 1, BYTE}, // push
+  {"PUSH.W",0x1200, 1, WORD}, // push
+  {"RETI",  0x1300, 0, }, // reti
+  {"RRA",   0x1100, 1, WORD}, // rra
+  {"RRA.B", 0x1100, 1, BYTE}, // rra
+  {"RRA.W", 0x1100, 1, WORD}, // rra
+  {"RRC",   0x1000, 1, WORD}, // rrc
+  {"RRC.B", 0x1000, 1, BYTE}, // rrc
+  {"RRC.W", 0x1000, 1, WORD}, // rrc
+  {"SUB",   0x8000, 2, WORD}, // sub
+  {"SUB.B", 0x8000, 2, BYTE}, // sub
+  {"SUB.W", 0x8000, 2, WORD}, // sub
+  {"SUBC",  0x7000, 2, WORD}, // subc
+  {"SUBC.B",0x7000, 2, BYTE}, // subc
+  {"SUBC.W",0x7000, 2, WORD}, // subc
+  {"SWPB",  0x1080, 1, }, // swpb
+  {"SXT",   0x1180, 1, }, // sxt
+  {"XOR",   0xE000, 2, WORD}, // xor
+  {"XOR.B", 0xE000, 2, BYTE}, // xor
+  {"XOR.W", 0xE000, 2, WORD}, // xor
 };
 // Local Function Prototypes
-void initInstTable(void);
-int isInst(char* token, Inst* return_inst);
+int isInst(char* token);
 Inst* getInst(char* token);
-void handleInst(Inst* inst_ptr, char* token_array[]);
+void handleInst_1(Inst* inst_ptr, char* operands);
 
 // Extern Variables
 // Extern Function Prototypes
 // Definitions
 
-void initInstTable(void)
+int isInst(char* token)
 {
-  // for each element in the inst table, passing a name
-  // loop and set the character =s in token to uppercase
-
-  strcpy(inst_table[0].name, "ADD");
-  strcpy(inst_table[1].name, "ADDC");
-  strcpy(inst_table[2].name, "AND");
-  strcpy(inst_table[3].name, "BIC");
-  strcpy(inst_table[4].name, "BIS");
-  strcpy(inst_table[5].name, "BIT");
-  strcpy(inst_table[6].name, "CALL");
-  strcpy(inst_table[7].name, "CMP");
-  strcpy(inst_table[8].name, "DADD");
-  strcpy(inst_table[9].name, "JC");
-  strcpy(inst_table[10].name, "JEQ");
-  strcpy(inst_table[11].name, "JGE");
-  strcpy(inst_table[12].name, "JHS");
-  strcpy(inst_table[13].name, "JL");
-  strcpy(inst_table[14].name, "JLO");
-  strcpy(inst_table[15].name, "JMP");
-  strcpy(inst_table[16].name, "JN");
-  strcpy(inst_table[17].name, "JNC");
-  strcpy(inst_table[18].name, "JNE");
-  strcpy(inst_table[19].name, "JNZ");
-  strcpy(inst_table[20].name, "JZ");
-  strcpy(inst_table[21].name, "MOV");
-  strcpy(inst_table[22].name, "PUSH");
-  strcpy(inst_table[23].name, "RETI");
-  strcpy(inst_table[24].name, "RRA");
-  strcpy(inst_table[25].name, "RRC");
-  strcpy(inst_table[26].name, "SUB");
-  strcpy(inst_table[27].name, "SUBC");
-  strcpy(inst_table[28].name, "SWPB");
-  strcpy(inst_table[29].name, "SXT");
-  strcpy(inst_table[30].name, "XOR");
-}
-
-int isInst(char* token, Inst* return_inst)
-{
-  // determine if the string token is an instruction.
-  // tokenize the passed token 
-  // check the first token: if it matches an instruction, thencont
-  // if not, then unfound. 
   char dup[strlen(token)];
   strcpy(dup, token);
   int i;
   for(i = 0; i < strlen(dup); i++){
     toupper(dup[i]);
   }
-  char* instruction;
-  char* b_w;
-  instruction = strtok(dup, ".");
-  b_w = strtok(NULL, "\0");
-
   for (i = 0; i < TOTAL_INSTRUCTIONS; i++){
-    if(strcmp(instruction, inst_table[i].name) == 0){
-      *return_inst = inst_table[i];
-      break;
-    }
-  }
-  if(i == TOTAL_INSTRUCTIONS){ return 0; } // unfound
-
-  if(return_inst->type != JUMP && return_inst->type != NONE){
-    if(b_w != NULL){
-      if(*b_w == 'W'){
-        // is a word
-        return_inst->b_w = WORD;
-        return 1;
-      } else if(*b_w == 'B'){
-        // is a byte
-        return_inst->b_w = BYTE;
-        return 1;
-      }
-    } else{
-      // is a word
-      return_inst->b_w = WORD;
+    if(strcmp(dup, inst_table[i].name) == 0){
       return 1;
     }
+    return 0;
   }
-  return 0;
 }
 
 Inst* getInst(char* token)
 {
   int i;
+  char dup[strlen(token)];
+  strcpy(dup, token);
+
+  for(i = 0; i < strlen(dup); i++){
+    toupper(dup[i]);
+  }
   for(i = 0; i < TOTAL_INSTRUCTIONS; i++){
-    if(strcmp(token, inst_table[i].name) == 0){
+    if(strcmp(dup, inst_table[i].name) == 0){
       return &(inst_table[i]);
     }
   }
   return NULL;
 }
 
-void handleInst(Inst* inst_ptr, char* token_array[])
+void handleInst(Inst* inst_ptr, char* operands)
 {
 
 }

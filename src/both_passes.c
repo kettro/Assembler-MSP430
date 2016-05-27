@@ -8,7 +8,10 @@
 // Defines
 // Local Variables
 // Local Prototypes
-int ParseOperands(char* operand, OperandVal* val);
+int parseOperands(char* operand, OperandVal* val);
+int parseType1(char* operand, OperandVal* src);
+int parseType2(char* operands, OperandVal* src, OperandVal* dst);
+int parseType3(char* operand, OperandVal* dst);
 // Extern Variables
 // Extern Prototypes
 extern Symbol* getSymbol(char* name);
@@ -16,7 +19,7 @@ extern int isLabel(char* token);
 // Defintions
 
 
-int ParseOperands(char* operand, OperandVal* val)
+int parseOperands(char* operand, OperandVal* val)
 {
   Symbol* symbol_ptr;
   char* operand_ptr;
@@ -122,3 +125,20 @@ int ParseOperands(char* operand, OperandVal* val)
   }
 }
 
+int parseType1(char* operand, OperandVal* src)
+{
+  // parsing a type1 inst operand
+  // 1 operand, can be any of the 7 addr_modes
+  // check for only 1 operand
+}
+int parseType2(char* operands, OperandVal* src, OperandVal* dst)
+{
+  // parsing type2 operands
+  // 2 operands:
+  // src => 7 addr modes, dst => 4 addr_modes
+  // divide up; check that both aren't null
+}
+int parseType3(char* operand, OperandVal* dst)
+{
+  // parse jumps
+}

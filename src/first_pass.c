@@ -7,6 +7,7 @@
 #include "symbol_table_data_structures.h"
 #include "token_data_structures.h"
 #include "inst_table.h"
+#include "dir_table.h"
 // Defines
 #define MAX_LINE_LENGTH     256
 // Local Variables
@@ -19,7 +20,7 @@ int isBlank(char* token);
   // inst_table.c
 extern int isInst(char* token);
 extern Inst* getInst(char*token);
-extern void handleInst(Inst* inst_ptr, char* token_ptr);
+extern void handleInst_1(Inst* inst_ptr, char* token_ptr);
   // symbol_table.c
 extern Symbol* getSymbol(char* name);
 extern void addSymbol(char* name, uint16_t value, SymbolType type);
@@ -28,8 +29,8 @@ extern int isLabel(char* token);
   // both_passes.c
 extern int parseOperands(char* operand, OperandVal* val);
   // dir_table.c
-//extern Dir* getDir(char* token);
-//extern void handleDir(Dir* dir_ptr, char* token_ptr);
+extern Dir* getDir(char* token);
+extern int handleDir_1(Dir* dir_ptr, char* token_ptr);
 extern int isDir(char* token);
 // Definitions
 
@@ -54,40 +55,47 @@ int first_pass(int in_file_desc)
 {
   FILE* infile_ptr = fdopen(in_file_desc,"r");
   char line[MAX_LINE_LENGTH];
-  char* line_tok_ptr[2];
+  char line_dup[MAX_LINE_LENGTH];
+  char* first_token_ptr;
+  char* operand_token_ptr;
   Inst* inst_ptr;
   Symbol* symbol_ptr;
   OperandVal* operand_ptr;
-  //Dir* dir_ptr;
+  Dir* dir_ptr;
   int i;
   while(fgets(line, sizeof(line), infile_ptr)){
-    line_tok_ptr[0] = strtok(line, ";"); // tokenize the comments out
-    if(line_tok_ptr[0] == NULL){ break; }
-    line_tok_ptr[1] = strtok(line_tok_ptr[0], " \n\r"); // tokenize on space, and endline
-    if(isBlank(line_tok_ptr[0])){
+    strcpy(line_dup, line);
+    first_token_ptr = strtok(line_dup, " \n\r;"); // tokenize on space, CR, endline, ; to get tk1
+    if(isBlank(first_token_ptr)){ // no entry on the line
       continue;
     }
-    for(i = 0; *(line_tok_ptr[0]) == '\0' && i < 4; i++){ line_tok_ptr[0]++; } // find the next non-null;
-    if(isInst(line_tok_ptr[1])){
-      if((inst_ptr = getInst(line_tok_ptr[1])) == NULL){
+    operand_token_ptr = first_token_ptr;
+    // find the next non-null;
+    for(i = 0; *operand_token_ptr == '\0' && i < 5; i++){ operand_token_ptr++; } 
+
+    if(isInst(first_token_ptr)){
+      if((inst_ptr = getInst(first_token_ptr)) == NULL){
         break; // error
       }
-      handleInst(inst_ptr, line_tok_ptr[0]); // point to the first non_null;
+      handleInst_1(inst_ptr, operand_token_ptr); // point to the first non_null;
       continue;
-    }else if(isDir(line_tok_ptr[1])){
+    }else if(isDir(first_token_ptr)){
       // handle dir
-      // if((dir_ptr = getDir(line_tok_ptr[1])) == NULL){
-      //   break;
-      // }
-      // handledir(dir_ptr, line_tok_ptr);
-      // continue;
-    }else if(isLabel(line_tok_ptr[1])){
+       if((dir_ptr = getDir(first_token_ptr)) == NULL){
+         break;
+       }
+       if(handleDir_1(dir_ptr, operand_token_ptr) == 0){ // if reads END
+         return 1;
+       }
+       continue;
+    }else if(isLabel(first_token_ptr)){
       // handle Label
       // if((symbol_ptr = getSymbol(line_tok_ptr[1])) == NULL){
       //   break;
       // }
     }
   }
+  return 1;
 }
 
 int isBlank(char* token)

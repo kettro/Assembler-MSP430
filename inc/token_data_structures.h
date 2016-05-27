@@ -3,25 +3,7 @@
 
 #include <stdint.h>
 #include "symbol_table_data_structures.h"
-
-typedef enum TokenType{
-  LABEL = 0,
-  REG,
-  INSTRUCTION,
-  DIRECTIVE,
-  OPERAND, 
-}TokenType; 
-
-typedef enum AddrMode{
-  REG_DIRECT = 0,
-  INDEX,
-  RELATIVE,
-  ABSOLUTE,
-  INDIRECT,
-  INDIRECT_AA,
-  IMMEDIATE,
-  BAD_ADDR,
-}AddrMode;
+#include "enum_types.h"
 
 typedef struct OperandVal{
   AddrMode mode;

@@ -128,42 +128,45 @@ Inst* getInst(char* token)
  */
 void handleInst_1(char* command, char* operands)
 {
-  OperandVal* src;
-  OperandVal* dst;
+  OperandVal src;
+  OperandVal dst;
   Inst* inst_ptr = getInst(command);
   switch(inst_ptr->type){
     case NONE:
       // is RETI
-      location_counter++;
+      location_counter += 2; // for the inst itself
     case ONE:
       // one operand;
-      parseType1(operands, src);
-      if(src->mode == BAD_ADDR){
+      parseType1(operands, &src);
+      if(src.mode == BAD_ADDR){
         // error: badd addr
         return;
       }
-      location_counter += loc_cntr_inc_via_addrmode[src->mode];
+      location_counter += 2; // for the inst itself
+      location_counter += loc_cntr_inc_via_addrmode[src.mode];
       break;
     case TWO:
-      parseType2(operands, src, dst);
-      if(dst->mode == BAD_ADDR || src->mode == BAD_ADDR){
+      parseType2(operands, &src, &dst);
+      if(dst.mode == BAD_ADDR || src.mode == BAD_ADDR){
         // error: bad addr
         return;
       }
-      if(dst->mode == INDIRECT || dst->mode == INDIRECT_AA || dst->mode == IMMEDIATE){
+      if(dst.mode == INDIRECT || dst.mode == INDIRECT_AA || dst.mode == IMMEDIATE){
         // error: improper dst addr mode
         return;
       }
-      location_counter += loc_cntr_inc_via_addrmode[src->mode];
-      location_counter += loc_cntr_inc_via_addrmode[dst->mode];
+      location_counter += 2; // for the inst itself
+      location_counter += loc_cntr_inc_via_addrmode[src.mode];
+      location_counter += loc_cntr_inc_via_addrmode[dst.mode];
       break;
     case JUMP:
-      parseType3(operands, src);
-      if(src->mode == BAD_ADDR){
+      parseType3(operands, &src);
+      if(src.mode == BAD_ADDR){
         //error: bad addr
         return;
       }
-      location_counter += loc_cntr_inc_via_addrmode[src->mode];
+      location_counter += 2; // for the inst itself
+      location_counter += loc_cntr_inc_via_addrmode[src.mode];
       break;
   }
 }

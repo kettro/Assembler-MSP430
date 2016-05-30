@@ -23,7 +23,7 @@ extern void symbolTableTest(void);
 
 int main(void)
 {
-  testSuite('i'); // Inst table test
+  testSuite('1'); // Inst table test
   // initSymbolTable(); // add the required elements to the ST
 
   // Symbol* symbol;

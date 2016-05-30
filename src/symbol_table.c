@@ -165,9 +165,10 @@ int handleLabel_1(char* label, char* operand)
   // handle labels in 1st pass
   // need to also handle EQU, as well as adding things to the ST
   // get next token (not actually an operand - should be inst or dir)
-  Symbol* symbol_ptr;
-  if((symbol_ptr = getSymbol(label)) == NULL){
+  Symbol* symbol_ptr = getSymbol(label);
+  if(symbol_ptr == NULL){
     addSymbol(label, 0, UNKNOWN); // add the symbol as an unknown if not found initially
+    symbol_ptr = getSymbol(label);
   }
   char dup[strlen(operand)];
   strcpy(dup, operand);
@@ -178,17 +179,19 @@ int handleLabel_1(char* label, char* operand)
   char is_equ_str[strlen(command)];
   strcpy(is_equ_str, command);
   int i;
-  for(i = 0; i < strlen(is_equ_str); i++){ toupper(is_equ_str[i]); }
-  OperandVal* val;
+  for(i = 0; i < strlen(is_equ_str); i++){ 
+    is_equ_str[i] = toupper(is_equ_str[i]); 
+  }
+  OperandVal val;
   if(isDir(command)){
     if(strcmp(command, "EQU") == 0){
       // is EQU: handle differently than else
-      parseDirOperand(argument, val); // get the values of the operands
-      if(val->type1 == UNKNOWN){
+      parseDirOperand(argument, &val); // get the values of the operands
+      if(val.type1 == UNKNOWN){
         //error- must be known for EQU
         return 1; 
       }
-      updateSymbol(symbol_ptr, val->val0);
+      updateSymbol(symbol_ptr, val.val0);
       return 1; // update and we're done. no inc of LC
     }else{
       // standard directive; add the location counter, and then handle the directive

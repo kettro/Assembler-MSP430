@@ -94,8 +94,6 @@ int handleDir_1(char* command, char* operand)
       return 1;
     }
     value = val.val0;
-    printf("type: %d\n", val.type0);
-    printf("value: %d\n", value);
   }
   switch(name){
     case END_D:

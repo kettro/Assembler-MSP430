@@ -8,7 +8,7 @@
 // Local Variables
 static char loc_cntr_inc_via_addrmode[] = {0 , 2, 2, 2, 0, 0, 2};
 // Local Function Prototypes
-int first_pass(FILE* infile_ptr);
+int firstPass(char* filename);
 int isBlank(char* token);
 // Extern Variables
 uint16_t location_counter;
@@ -30,8 +30,9 @@ extern int isDir(char* token);
  * Return: boolean, if there is an error in the 1st pass
  * Results: produces a symbol table, checks syntax
  */
-int first_pass(FILE* infile_ptr)
+int firstPass(char* filename)
 {
+  FILE* infile_ptr = fopen(filename, "r");
   location_counter = 0;
   char line[MAX_LINE_LENGTH];
   char line_dup[MAX_LINE_LENGTH]; // to preserve the line, for reuse
@@ -39,6 +40,7 @@ int first_pass(FILE* infile_ptr)
   char* operand_token_ptr; // track the operands
   int i;
   while(fgets(line, sizeof(line), infile_ptr)){
+    printf("%d\n", location_counter);
     strcpy(line_dup, line);
     first_token_ptr = strtok(line_dup, " \n\t\r;"); // tokenize on space, CR, endline, ; to get tk1
     if(isBlank(first_token_ptr)){ // no entry on the line
@@ -54,7 +56,10 @@ int first_pass(FILE* infile_ptr)
     }
     // Check if the 1st token is a directive
     else if(isDir(first_token_ptr)){
-      if(handleDir_1(first_token_ptr, operand_token_ptr) == 0){ /*is END*/ return 1; }
+      if(handleDir_1(first_token_ptr, operand_token_ptr) == 0){ 
+        /*is END*/ 
+        return 1; 
+      }
       // next loop please
       continue;
     }

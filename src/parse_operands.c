@@ -68,7 +68,7 @@ int parseOperands(char* operand, OperandVal* val)
 
       symbol_ptr = getSymbol(alphanum_ptr); // get symbol of the label: REG, or not?
       if(symbol_ptr == NULL || symbol_ptr->type != REGISTER){
-        val->mode = BAD_ADDR; // indir can't use forward declaration
+        val->mode = BAD_ADDR; // indir can't use non-registers I guess?
         return 0;
       }
       val->val0 = symbol_ptr->value;
@@ -164,7 +164,6 @@ int parseDirOperand(char* operand, OperandVal* val)
   }else if(isdigit(*operand_ptr)){ // decimal
       val->val0 = strtol(operand_ptr, NULL, 10);
       val->type0 = KNOWN;
-      printf("val's vals: %d\n", val->val0);
       return 1;
   }
     // must be an error

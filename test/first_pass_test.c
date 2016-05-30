@@ -1,0 +1,5 @@
+#include "dir_table.h"
+#include "enum_types.h"
+#include "inst_table.h"
+#include "symbol_table_data_structures.h"
+#include "token_data_structures.h"

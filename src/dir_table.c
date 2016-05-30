@@ -1,9 +1,11 @@
 // Includes
+#include "token_data_structures.h"
 #include "dir_table.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 // Defines
 #define TOTAL_DIRS    8
 // Local Variables
@@ -20,11 +22,12 @@ Dir dir_table[] = {
 // Local Function Prototypes
 int isDir(char* token);
 Dir* getDir(char* token);
-int handleDir_1(Dir* dir_ptr, char* operand);
-int handleDir_2(Dir* dir_ptr, char* operand);
+int handleDir_1(char* command, char* operand);
+// int handleDir_2(Dir* dir_ptr, char* operand);
 // Extern Variables
 extern uint16_t location_counter;
 // Extern Function Prototypes
+extern int parseDirOperand(char* operand, OperandVal* val);
 extern void emit(uint16_t lc, uint8_t value); // defined in an srec generator file
 extern void trigger_emit(uint16_t lc);        // "", sends the emit file if >32, or if triggered
 // Definitions
@@ -35,15 +38,15 @@ int isDir(char* token)
   char dup[strlen(token)];
   strcpy(dup, token);
   for(i = 0; i < strlen(dup); i++){
-    toupper(dup[i]);
+    dup[i] = toupper(dup[i]);
   }
 
   for(i = 0; i < TOTAL_DIRS; i++){
     if(strcmp(dup, dir_table[i].name) == 0){
       return 1;
     }
-    return 0;
   }
+  return 0;
 }
 
 Dir* getDir(char* token)
@@ -53,24 +56,47 @@ Dir* getDir(char* token)
   strcpy(dup, token);
 
   for(i = 0; i < strlen(dup); i++){
-    toupper(dup[i]);
+    dup[i] = toupper(dup[i]);
   }
   for(i = 0; i < TOTAL_DIRS; i++){
     if(strcmp(dup, dir_table[i].name) == 0){
       return &(dir_table[i]);
     }
-    return NULL;
   }
+  return NULL;
 }
 
 // Handling 1st Pass Directives
-int handleDir_1(Dir* dir_ptr, char* operand)
+int handleDir_1(char* command, char* operand)
 {
-  char dup[strlen(operand)];
+  char dup_op[strlen(operand)];
+  char dup_com[strlen(command)];
+  int i;
   char* op_ptr;
-  strcpy(dup, operand);
+  strcpy(dup_op, operand);
+  strcpy(dup_com, command);
+
+  for(i = 0; i < strlen(dup_com); i++){
+    dup_com[i] = toupper(dup_com[i]);
+  }
   uint16_t value = 0;
+  Dir* dir_ptr = getDir(dup_com); // get the directive, as is a directive
   DirName name = dir_ptr->enum_name;
+  OperandVal val;
+  if(parseDirOperand(dup_op, &val) == 0){
+    // error: error in processing operand
+    return 1;
+  }
+  if(&val != NULL){ // if no operands => ALIGN, or END
+    if((val.type0 == LABELTYPE && val.type1 == UNKNOWN) && (name == ORG_D || name == BSS_D)){
+      // no forward declarations for org or bss
+      // error
+      return 1;
+    }
+    value = val.val0;
+    printf("type: %d\n", val.type0);
+    printf("value: %d\n", value);
+  }
   switch(name){
     case END_D:
       // stop compilation
@@ -79,16 +105,19 @@ int handleDir_1(Dir* dir_ptr, char* operand)
       // error
       return 1;
     case ALIGN_D:
+      if(dup_op[0] != '\0'){ 
+        //error
+        return 1;
+      }
       location_counter += location_counter % 2;
       return 1;
     case ASCII_D:
       // operand is a string: get the number of characters in string
-      strtok(dup, "\""); // tokenize of the first "
+      strtok(dup_op, "\""); // tokenize of the first "
       op_ptr = strtok(NULL, "\""); // tokenize now on the last ", to get the string
       value = strlen(op_ptr);
       break;
     default:
-      value = strtol(dup, NULL, 10);
       break;
       // parse operands, and get the value of the operands
   }
@@ -97,7 +126,7 @@ int handleDir_1(Dir* dir_ptr, char* operand)
   }else if(name  == ASCII_D || name == BSS_D){
     location_counter += value;
   }else if(dir_ptr->enum_name == BYTE_D){
-    if(value & 0xFF != value){ // check if 8 bit value
+    if((value & 0xFF) != value){ // check if 8 bit value
      // error- not 8 bits! (or warning?)
     }else{
       location_counter++;
@@ -109,7 +138,7 @@ int handleDir_1(Dir* dir_ptr, char* operand)
   return 1;
 }
 
-
+/*
 // Handling 2nd Pass Directives
 int handleDir_2(Dir* dir_ptr, char* operand)
 {
@@ -131,6 +160,13 @@ int handleDir_2(Dir* dir_ptr, char* operand)
   DirName name = dir_ptr->enum_name;
   if(operand != NULL && name != ASCII_D){ // get values for std dirs
     value = strtol(dup, NULL, 10);
+    OperandVal* val;
+    if(parseOperands(operand, val) == 0){
+      //error
+    }else if(val->mode != IMMEDIATE || val->mode != ABSOLUTE){
+      // error: improper mode
+      return 1;
+    }
   }else if(operand != NULL && name == ASCII_D){ // ascii is special!
     strtok(dup, "\"");
     ascii_str = strtok(NULL, "\"");
@@ -178,3 +214,4 @@ int handleDir_2(Dir* dir_ptr, char* operand)
   }
   return 1;
 }
+*/

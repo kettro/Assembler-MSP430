@@ -4,6 +4,9 @@
 #include <string.h>
 #include <ctype.h>
 #include "symbol_table_data_structures.h"
+#include "token_data_structures.h"
+#include "inst_table.h"
+#include "dir_table.h"
 
 // Local Defines
 #define NUMBER_OF_REGISTERS     21
@@ -14,11 +17,20 @@ Symbol register_list[NUMBER_OF_REGISTERS];
 // Local Prototypes
 void addSymbol(char* name, uint16_t value, SymbolType type);
 Symbol* getSymbol(char* name);
-int findUnknowns(Symbol* unknown_array[]);
+void updateSymbol(Symbol* symbol_ptr, uint16_t value);
+int findUnknowns(void);
 void initSymbolTable(void);
 int isLabel(char* token);
+int handleLabel_1(char* label, char* operand);
+int handleLabel_2(Symbol* symbol_ptr, char* operand);
 // Extern Variables
+extern uint16_t location_counter;
 // Extern Prototypes
+extern int isDir(char* operand);
+extern int handleDir_1(char* command, char* operand);
+extern int parseDirOperand(char* operand, OperandVal* val);
+extern int isInst(char* operand);
+extern int handleInst_1(char* command, char* operands);
 // Definitions
 
 void addSymbol(char* name, uint16_t value, SymbolType type)
@@ -35,7 +47,6 @@ void addSymbol(char* name, uint16_t value, SymbolType type)
     table_length++;
   } else{ // not a new symbol: error
     fprintf(stderr, "Error: attempting to add a duplicate entry: %s\n", name);
-    // 
   }
 }
 
@@ -56,21 +67,33 @@ Symbol* getSymbol(char* name)
   return NULL;
 }
 
-int findUnknowns(Symbol* unknown_array[])
+void updateSymbol(Symbol* symbol_ptr, uint16_t value)
+{
+  if(symbol_ptr->type == REGISTER){ return; } // no updating registers
+  symbol_ptr->value = value;
+  symbol_ptr->type = KNOWN;
+}
+
+int findUnknowns(void)
 {
   Symbol* temp = Root.next;
   int i = 0;
   while(temp != NULL){
     if(temp->type == UNKNOWN){
-      unknown_array[i] = temp;
       i++;
+      // error
+      printf("Unknown found for symbol %s\n", temp->name);
     }
     temp = temp->next;
   }
-  if(temp == NULL){ return 0; }
-  else{ return 1; }
+  return i;
 }
 
+/* Initialize the Register List, and the Root
+ * Params: none
+ * Return: none
+ * Result: Root established, register_list populated
+ */
 void initSymbolTable(void)
 {
   Root.name = NULL;
@@ -130,11 +153,68 @@ int isLabel(char* token)
 {
   // if isalphanum
   Symbol* symbol_ptr;
-  if(isalpha(*token)){
-    if((symbol_ptr = getSymbol(token)) != NULL && symbol_ptr->type != REGISTER){
-      // is a label!
-      return 1;
-    }
+  if(isalpha(*token)){ // can't be a number
+    // could be a label: not muxh else it could be
+    return 1;
   }
   return 0;
 }
+
+int handleLabel_1(char* label, char* operand)
+{
+  // handle labels in 1st pass
+  // need to also handle EQU, as well as adding things to the ST
+  // get next token (not actually an operand - should be inst or dir)
+  Symbol* symbol_ptr;
+  if((symbol_ptr = getSymbol(label)) == NULL){
+    addSymbol(label, 0, UNKNOWN); // add the symbol as an unknown if not found initially
+  }
+  char dup[strlen(operand)];
+  strcpy(dup, operand);
+  uint16_t value;
+  uint16_t temp_lc = location_counter;
+  char* command = strtok(dup, " \n\r;");
+  char* argument = strtok(NULL, "\n\r;"); // args are the next non null
+  char is_equ_str[strlen(command)];
+  strcpy(is_equ_str, command);
+  int i;
+  for(i = 0; i < strlen(is_equ_str); i++){ toupper(is_equ_str[i]); }
+  OperandVal* val;
+  if(isDir(command)){
+    if(strcmp(command, "EQU") == 0){
+      // is EQU: handle differently than else
+      parseDirOperand(argument, val); // get the values of the operands
+      if(val->type1 == UNKNOWN){
+        //error- must be known for EQU
+        return 1; 
+      }
+      updateSymbol(symbol_ptr, val->val0);
+      return 1; // update and we're done. no inc of LC
+    }else{
+      // standard directive; add the location counter, and then handle the directive
+      updateSymbol(symbol_ptr, temp_lc);
+      if(handleDir_1(command, argument) == 0){
+        // END encountered
+        return 0;
+      }
+      return 1; 
+    }
+  }else if(isInst(command)){
+
+  }
+  else{
+    // error; must be either isnt or dir next
+
+  }
+
+  return 1;
+}
+
+/*
+int handleLabel_2(Symbol* symbol_ptr, char* operand)
+{
+  if(location_counter != symbol_ptr->value){ return 0;} // error: someone fucked up
+  return 1;
+  // handle labels in 2nd pass: aka, skip.
+}
+*/

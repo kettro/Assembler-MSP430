@@ -5,6 +5,7 @@
 #include <ctype.h>
 #include "symbol_table_data_structures.h"
 #include "inst_table.h"
+#include "token_data_structures.h"
 // Defines
 // Local Variables
 Inst inst_table[TOTAL_INSTRUCTIONS] = {
@@ -69,14 +70,20 @@ Inst inst_table[TOTAL_INSTRUCTIONS] = {
   {"XOR",   0xE000, 2, WORD}, // xor
   {"XOR.B", 0xE000, 2, BYTE}, // xor
   {"XOR.W", 0xE000, 2, WORD}, // xor
-};
+};  
+static char loc_cntr_inc_via_addrmode[] = {0 , 2, 2, 2, 0, 0, 2};
 // Local Function Prototypes
 int isInst(char* token);
 Inst* getInst(char* token);
-void handleInst_1(Inst* inst_ptr, char* operands);
+void handleInst_1(char* command, char* operands);
+void handleInst_2(char* command, char* operands);
 
 // Extern Variables
+extern uint16_t location_counter; // global
 // Extern Function Prototypes
+extern int parseType1(char* operand, OperandVal* src);
+extern int parseType2(char* operand, OperandVal* src, OperandVal* dst);
+extern int parseType3(char* operand, OperandVal* src);
 // Definitions
 
 int isInst(char* token)
@@ -85,14 +92,14 @@ int isInst(char* token)
   strcpy(dup, token);
   int i;
   for(i = 0; i < strlen(dup); i++){
-    toupper(dup[i]);
+    dup[i] = toupper(dup[i]);
   }
   for (i = 0; i < TOTAL_INSTRUCTIONS; i++){
     if(strcmp(dup, inst_table[i].name) == 0){
       return 1;
     }
-    return 0;
   }
+  return 0;
 }
 
 Inst* getInst(char* token)
@@ -102,8 +109,9 @@ Inst* getInst(char* token)
   strcpy(dup, token);
 
   for(i = 0; i < strlen(dup); i++){
-    toupper(dup[i]);
+    dup[i] = toupper(dup[i]);
   }
+
   for(i = 0; i < TOTAL_INSTRUCTIONS; i++){
     if(strcmp(dup, inst_table[i].name) == 0){
       return &(inst_table[i]);
@@ -112,7 +120,62 @@ Inst* getInst(char* token)
   return NULL;
 }
 
-void handleInst(Inst* inst_ptr, char* operands)
+/* Handle Instruction for 1st Pass
+ * params: command: string of instruction
+ *         operands: string of the argument(s) to the instruction
+ * returns: none
+ * Resultants: Identify the LC increments, and increment
+ */
+void handleInst_1(char* command, char* operands)
 {
+  OperandVal* src;
+  OperandVal* dst;
+  Inst* inst_ptr = getInst(command);
+  switch(inst_ptr->type){
+    case NONE:
+      // is RETI
+      location_counter++;
+    case ONE:
+      // one operand;
+      parseType1(operands, src);
+      if(src->mode == BAD_ADDR){
+        // error: badd addr
+        return;
+      }
+      location_counter += loc_cntr_inc_via_addrmode[src->mode];
+      break;
+    case TWO:
+      parseType2(operands, src, dst);
+      if(dst->mode == BAD_ADDR || src->mode == BAD_ADDR){
+        // error: bad addr
+        return;
+      }
+      if(dst->mode == INDIRECT || dst->mode == INDIRECT_AA || dst->mode == IMMEDIATE){
+        // error: improper dst addr mode
+        return;
+      }
+      location_counter += loc_cntr_inc_via_addrmode[src->mode];
+      location_counter += loc_cntr_inc_via_addrmode[dst->mode];
+      break;
+    case JUMP:
+      parseType3(operands, src);
+      if(src->mode == BAD_ADDR){
+        //error: bad addr
+        return;
+      }
+      location_counter += loc_cntr_inc_via_addrmode[src->mode];
+      break;
+  }
+}
 
+/* Handle Instructions for 2nd Pass
+ * Params: command: the instruction string
+ *         operands: the argument(s) to the instruction
+ * returns: none
+ * Resultants:  send one or more instructions to the emitter via emit()
+ *              increase the LC by the required amount per call to emit()
+ */
+void handleInst_2(char* command, char* operands)
+{
+  return;
 }

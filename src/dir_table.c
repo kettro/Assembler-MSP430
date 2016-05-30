@@ -75,7 +75,6 @@ int handleDir_1(char* command, char* operand)
   char* op_ptr;
   strcpy(dup_op, operand);
   strcpy(dup_com, command);
-
   for(i = 0; i < strlen(dup_com); i++){
     dup_com[i] = toupper(dup_com[i]);
   }

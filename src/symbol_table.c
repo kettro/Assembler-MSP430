@@ -53,8 +53,12 @@ void addSymbol(char* name, uint16_t value, SymbolType type)
 Symbol* getSymbol(char* name)
 {
   int i;
+  char reg_comp[strlen(name)];
+  for(i = 0; i < strlen(name); i++){
+    reg_comp[i] = toupper(name[i]);
+  }
   for(i = 0; i < NUMBER_OF_REGISTERS; i++){
-    if(strcmp(name, register_list[i].name) == 0){
+    if(strcmp(reg_comp, register_list[i].name) == 0){
       return &(register_list[i]);
     }
   }

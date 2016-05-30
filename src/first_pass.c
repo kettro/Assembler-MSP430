@@ -1,4 +1,5 @@
 // Includes
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,6 +39,7 @@ int firstPass(char* filename)
   char line_dup[MAX_LINE_LENGTH]; // to preserve the line, for reuse
   char* first_token_ptr; // track the first token
   char* operand_token_ptr; // track the operands
+  char nul = '\0';
   int i;
   while(fgets(line, sizeof(line), infile_ptr)){
     printf("%d\n", location_counter);
@@ -56,8 +58,12 @@ int firstPass(char* filename)
     }
     // Check if the 1st token is a directive
     else if(isDir(first_token_ptr)){
+      if(operand_token_ptr == NULL){
+        *operand_token_ptr = '\0'; // give the operand some value
+      }
       if(handleDir_1(first_token_ptr, operand_token_ptr) == 0){ 
         /*is END*/ 
+        fclose(infile_ptr);
         return 1; 
       }
       // next loop please
@@ -68,12 +74,14 @@ int firstPass(char* filename)
       // check if the sysmbol is already in the table
       if(handleLabel_1(first_token_ptr, operand_token_ptr) == 0){
         // if handleLabel => 0: found END, end compilation
+        fclose(infile_ptr);
         return 1;
       }
       // next loop please
       continue;
     }
   }
+  fclose(infile_ptr);
   return 1;
 }
 

@@ -18,12 +18,12 @@ void firstPass_test(void)
   char* filename = "test.asm";
 
   FILE* file = fopen(filename, "w");
-  fprintf(file, "label1 BYTE 5 ; comment\n"); // label, dir, 1 op, comment
-  fprintf(file, "label2 bss 34\n");
-  fprintf(file, "swpb label1\n");
-  fprintf(file, "mov label1 label2"); // NOTE: getting a seg fault due to no commas!!!!!!
+  //fprintf(file, "label1 BYTE 5 ; comment\n"); // label, dir, 1 op, comment
+  //fprintf(file, "label2 bss 34\n");
+  //fprintf(file, "swpb label1\n");
+  //fprintf(file, "mov label1, label2\n"); // NOTE: getting a seg fault due to no commas!!!!!!
   fprintf(file, "mov @r6, r2\n");
-  fprintf(file, "end");
+  fprintf(file, "end\n");
   fclose(file);
   
   initSymbolTable();

@@ -136,7 +136,6 @@ int parseOperands(char* operand, OperandVal* val)
 int parseDirOperand(char* operand, OperandVal* val)
 {
   // parsing a directive's operands: not the same as an inst's!
-  int idd = 0;
   char dup[strlen(operand)];
   strcpy(dup, operand);
   char* operand_ptr = &(dup[0]);
@@ -200,9 +199,16 @@ int parseType2(char* operands, OperandVal* src, OperandVal* dst)
   strcpy(dup, operands);
   char* op1_ptr;
   char* op2_ptr;
-
-  op1_ptr = strtok(dup, " ,;\n\r\t");
-  op2_ptr = strtok(NULL, " ;\n\r\t");
+  char* has_a_comma = strchr(dup, ',');
+  if(!has_a_comma){
+    // error: need a comma for type 2, for 2 arguments
+    return 0;
+  }else{
+    *has_a_comma = '\0';
+    op2_ptr = has_a_comma + 1; // set the op2 to the 1st value after the comma
+  }
+  op1_ptr = strtok(dup, " ;\n\r\t");
+  op2_ptr = strtok(op2_ptr, " ;\n\r\t");
 
   if(!(op1_ptr && op2_ptr)){
     // error: one of the operands is hella broken
@@ -217,7 +223,24 @@ int parseType2(char* operands, OperandVal* src, OperandVal* dst)
 }
 int parseType3(char* operand, OperandVal* dst)
 {
+  char dup[strlen(operand)];
+  strcpy(dup, operand);
+  char* op1_ptr = strtok(dup, " ,\n\r");
+  if(strtok(NULL, " ,;\n\r\t")){ // token on all the things
+    //error
+    return 0;
+  }
+  if(!strtok(NULL, " ;\n\t\r")){
+    // error: too many operands.
+    return 0;
+  }
+  if(parseOperands(op1_ptr, dst) == 0){
+    // error: some addr garbage or whatever
+    return 0;
+  }
+  if(dst->val0 % 2){
+    //error: odd location;
+  }
+  return 1;
   // parse jumps
-  // exactly the same thing as type3 parsing
-  return (parseType1(operand, dst));
 }

@@ -146,7 +146,10 @@ void handleInst_1(char* command, char* operands)
       location_counter += loc_cntr_inc_via_addrmode[src.mode];
       break;
     case TWO:
-      parseType2(operands, &src, &dst);
+      if(parseType2(operands, &src, &dst) == 0){
+        // error:
+        return;
+      }
       if(dst.mode == BAD_ADDR || src.mode == BAD_ADDR){
         // error: bad addr
         return;
@@ -160,7 +163,11 @@ void handleInst_1(char* command, char* operands)
       location_counter += loc_cntr_inc_via_addrmode[dst.mode];
       break;
     case JUMP:
-      parseType3(operands, &src);
+      location_counter += location_counter % 2; // must have the command lie on an even lc
+      if(parseType3(operands, &src) == 0){
+        // error in parsing
+        return;
+      }
       if(src.mode == BAD_ADDR){
         //error: bad addr
         return;

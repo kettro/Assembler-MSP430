@@ -13,7 +13,29 @@
 // Local Variables
 uint16_t table_length = 0;
 Symbol Root;
-Symbol register_list[NUMBER_OF_REGISTERS];
+Symbol register_list[] = {
+  {"R0", 0, REGISTER, NULL },
+  {"PC", 0, REGISTER, NULL },
+  {"R1", 1, REGISTER, NULL },
+  {"SP", 1, REGISTER, NULL },
+  {"R2", 2, REGISTER, NULL },
+  {"SR", 2, REGISTER, NULL },
+  {"CG1",2, REGISTER, NULL },
+  {"R3", 3, REGISTER, NULL },
+  {"CG2",3, REGISTER, NULL },
+  {"R4", 4, REGISTER, NULL },
+  {"R5", 5, REGISTER, NULL },
+  {"R6", 6, REGISTER, NULL },
+  {"R7", 7, REGISTER, NULL },
+  {"R8", 8, REGISTER, NULL },
+  {"R9", 9, REGISTER, NULL },
+  {"R10",10, REGISTER, NULL },
+  {"R11",11, REGISTER, NULL },
+  {"R12",12, REGISTER, NULL },
+  {"R13",13, REGISTER, NULL },
+  {"R14",14, REGISTER, NULL },
+  {"R15",15, REGISTER, NULL },
+};
 // Local Prototypes
 void addSymbol(char* name, uint16_t value, SymbolType type);
 Symbol* getSymbol(char* name);
@@ -28,9 +50,11 @@ extern uint16_t location_counter;
 // Extern Prototypes
 extern int isDir(char* operand);
 extern int handleDir_1(char* command, char* operand);
+extern int handleDir_2(char* command, char* operand);
 extern int parseDirOperand(char* operand, OperandVal* val);
 extern int isInst(char* operand);
 extern int handleInst_1(char* command, char* operands);
+extern int handleInst_2(char* command, char* operands);
 // Definitions
 
 void addSymbol(char* name, uint16_t value, SymbolType type)
@@ -103,54 +127,6 @@ void initSymbolTable(void)
   Root.name = NULL;
   Root.next = NULL;
   Root.value = 0;
-  int i;
-  for(i = 0; i < NUMBER_OF_REGISTERS; i++){
-    register_list[i].type = REGISTER;
-    register_list[i].next = NULL;
-    register_list[i].name = malloc(4 * sizeof(char));
-  }
-  strcpy(register_list[0].name, "R0");
-  register_list[0].value = 0;
-  strcpy(register_list[1].name, "PC");
-  register_list[1].value = 0;
-  strcpy(register_list[2].name, "R1");
-  register_list[2].value = 1;
-  strcpy(register_list[3].name, "SP");
-  register_list[3].value = 1;
-  strcpy(register_list[4].name, "R2");
-  register_list[4].value = 2;
-  strcpy(register_list[5].name, "SR");
-  register_list[5].value = 2;
-  strcpy(register_list[6].name, "CG1");
-  register_list[6].value = 2;
-  strcpy(register_list[7].name, "R3");
-  register_list[7].value = 3;
-  strcpy(register_list[8].name, "CG2");
-  register_list[8].value = 3;
-  strcpy(register_list[9].name, "R4");
-  register_list[9].value = 4;
-  strcpy(register_list[10].name, "R5");
-  register_list[10].value = 5;
-  strcpy(register_list[11].name, "R6");
-  register_list[11].value = 6;
-  strcpy(register_list[12].name, "R7");
-  register_list[12].value = 7;
-  strcpy(register_list[13].name, "R8");
-  register_list[13].value = 8;
-  strcpy(register_list[14].name, "R9");
-  register_list[14].value = 9;
-  strcpy(register_list[15].name, "R10");
-  register_list[15].value = 10;
-  strcpy(register_list[16].name, "R11");
-  register_list[16].value = 11;
-  strcpy(register_list[17].name, "R12");
-  register_list[17].value = 12;
-  strcpy(register_list[18].name, "R13");
-  register_list[18].value = 13;
-  strcpy(register_list[19].name, "R14");
-  register_list[19].value = 14;
-  strcpy(register_list[20].name, "R15");
-  register_list[20].value = 15;
 }
 
 int isLabel(char* token)
@@ -178,8 +154,8 @@ int handleLabel_1(char* label, char* operand)
   strcpy(dup, operand);
   uint16_t value;
   uint16_t temp_lc = location_counter;
-  char* command = strtok(dup, " \n\r;");
-  char* argument = strtok(NULL, "\n\r;"); // args are the next non null
+  char* command = strtok(dup, " \t\n\r;"); // shouldn't be needed, but being safe
+  char* argument = strtok(NULL, "\n\r\t"); // args are the next non null
   char is_equ_str[strlen(command)];
   strcpy(is_equ_str, command);
   int i;
@@ -188,7 +164,7 @@ int handleLabel_1(char* label, char* operand)
   }
   OperandVal val;
   if(isDir(command)){
-    if(strcmp(command, "EQU") == 0){
+    if(strcmp(is_equ_str, "EQU") == 0){
       // is EQU: handle differently than else
       parseDirOperand(argument, &val); // get the values of the operands
       if(val.type1 == UNKNOWN){

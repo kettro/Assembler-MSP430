@@ -21,17 +21,18 @@ extern void testSuite(char test);
 extern void symbolTableTest(void);
 // Definitions
 
-int main(void)
+int main(int argc, char* argv[])
 {
   testSuite('1'); // Inst table test
-  // initSymbolTable(); // add the required elements to the ST
 
-  // Symbol* symbol;
-  // addSymbol("a_Symbol", 99, KNOWN);
-  // addSymbol("not_a_name", 34, UNKNOWN);
-  // symbol = getSymbol("a_Symbol");
-  // if(symbol == NULL){ printf("SHIT\n"); }
-  // printf("symbol name: %d\n", symbol->value);
-
+  // initSymbolTable();
+  // => get filename
+  // firstPass(filename);
+  // if(findUnknowns() == 0){
+  //   error: unknowns!!!
+  // }
+  // => get .s19 filename
+  // secondPass(s19_file);
+  //
   return 0;
 }

@@ -48,7 +48,10 @@ int firstPass(char* filename)
     if(isBlank(first_token_ptr)){ // no entry on the line
       continue;
     }
-    operand_token_ptr = strtok(NULL, "\n\r;"); // tokenize, to get the operand section(only on EOLs)
+    operand_token_ptr = strtok(NULL, "\n\r\t"); // tokenize, have the opers and the comments
+    if(operand_token_ptr == NULL){ // case where nothing after the operand
+      operand_token_ptr = &nul;
+    }
 
     // Check if the 1st token is an instruction
     if(isInst(first_token_ptr)){
@@ -58,9 +61,6 @@ int firstPass(char* filename)
     }
     // Check if the 1st token is a directive
     else if(isDir(first_token_ptr)){
-      if(operand_token_ptr == NULL){
-        *operand_token_ptr = '\0'; // give the operand some value
-      }
       if(handleDir_1(first_token_ptr, operand_token_ptr) == 0){ 
         /*is END*/ 
         fclose(infile_ptr);

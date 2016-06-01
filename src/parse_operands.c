@@ -109,7 +109,6 @@ int parseOperands(char* operand, OperandVal* val)
           symbol_ptr = getSymbol(alphanum_ptr);
           val->type1 = LABELTYPE;
           val->val1 = symbol_ptr->value;
-
           alphanum_ptr = strtok(NULL, ")");
           symbol_ptr = getSymbol(alphanum_ptr);
           val->type0 = REGISTER;
@@ -145,6 +144,7 @@ int parseDirOperand(char* operand, OperandVal* val)
     val = NULL;
     return 1;
   }
+  
   if(isLabel(dup)){
     // is a label;
     if((symbol_ptr = getSymbol(operand_ptr)) == NULL){ // only for 1st pass

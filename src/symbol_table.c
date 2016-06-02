@@ -44,7 +44,7 @@ int findUnknowns(void);
 void initSymbolTable(void);
 int isLabel(char* token);
 int handleLabel_1(char* label, char* operand);
-int handleLabel_2(Symbol* symbol_ptr, char* operand);
+int handleLabel_2(char* label, char* operand);
 // Extern Variables
 extern uint16_t location_counter;
 // Extern Prototypes
@@ -132,7 +132,6 @@ void initSymbolTable(void)
 int isLabel(char* token)
 {
   // if isalphanum
-  Symbol* symbol_ptr;
   if(isalpha(*token)){ // can't be a number
     // could be a label: not muxh else it could be
     return 1;
@@ -183,21 +182,40 @@ int handleLabel_1(char* label, char* operand)
       return 1; 
     }
   }else if(isInst(command)){
-
+    updateSymbol(symbol_ptr, temp_lc);
+    handleInst_1(command, argument);
+    return 1;
   }
   else{
     // error; must be either isnt or dir next
-
+    return 1;
   }
-
-  return 1;
 }
 
-/*
-int handleLabel_2(Symbol* symbol_ptr, char* operand)
+
+int handleLabel_2(char* label, char* operand)
 {
-  if(location_counter != symbol_ptr->value){ return 0;} // error: someone fucked up
-  return 1;
   // handle labels in 2nd pass: aka, skip.
+  char dup[strlen(operand)];
+  strcpy(dup, operand);
+  Symbol* symbol_ptr = getSymbol(label);
+  if(symbol_ptr->value != location_counter){
+    // error= a initial label must match the lc! 
+    return 1;
+  }
+  char* command = strtok(dup, " \n\r\t");
+  char* argument = strtok(NULL, "\n\r\t");
+  if(isInst(command)){
+    handleInst_2(command, argument);
+  }else if(isDir(command)){
+    if(handleDir_2(command, argument) == 0){
+      // is end:
+      return 0;
+    }
+  }else{
+    // error;
+    return 1;
+  }
+  return 1;
 }
-*/
+

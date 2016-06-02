@@ -38,7 +38,7 @@ typedef union Type2Inst{
 typedef union Type3Inst{
   struct{
     signed addr: 10;
-    unsigned opcode: 6;
+    unsigned opc: 6;
   };
   uint16_t value;
 }Type3Inst;

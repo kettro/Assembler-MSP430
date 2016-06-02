@@ -84,6 +84,7 @@ extern uint16_t location_counter; // global
 extern int parseType1(char* operand, OperandVal* src);
 extern int parseType2(char* operand, OperandVal* src, OperandVal* dst);
 extern int parseType3(char* operand, OperandVal* src);
+extern void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc);
 // Definitions
 
 int isInst(char* token)
@@ -163,7 +164,7 @@ void handleInst_1(char* command, char* operands)
       location_counter += loc_cntr_inc_via_addrmode[dst.mode];
       break;
     case JUMP:
-      location_counter += location_counter % 2; // must have the command lie on an even lc
+      location_counter += location_counter % 2; // command must lie on even lc: autoalign
       if(parseType3(operands, &src) == 0){
         // error in parsing
         return;
@@ -187,5 +188,25 @@ void handleInst_1(char* command, char* operands)
  */
 void handleInst_2(char* command, char* operands)
 {
+  OperandVal src, dst;
+  Inst* inst_ptr = getInst(command);
+  switch(inst_ptr->type){
+    case NONE:
+      // is RETI:
+      emit_I(inst_ptr,  NULL, NULL, location_counter);
+      break;
+    case ONE:
+      parseType1(operands, &src);
+      emit_I(inst_ptr, &src, NULL, location_counter);
+      break;
+    case TWO:
+      parseType2(operands, &src, &dst);
+      emit_I(inst_ptr, &src, &dst, location_counter);
+      break;
+    case JUMP:
+      parseType3(operands, &src);
+      emit_I(inst_ptr, &src, NULL, location_counter);
+      break;
+  }
   return;
 }

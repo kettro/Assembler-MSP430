@@ -74,35 +74,35 @@ void handleDir_1_test(void)
 
   // ALIGN
   location_counter = 1;
-  int t1 = handleDir_1(test_d_1, "");
+  handleDir_1(test_d_1, "");
   printf("T1: LC: exp: 2, is: %d\n", location_counter);
   // BYTE 7
   location_counter = 0;
-  int t2 = handleDir_1(test_d_2, test_d_op1);
+  handleDir_1(test_d_2, test_d_op1);
   printf("T2: LC: exp: 1, is: %d\n", location_counter);
   // EQU 7
   location_counter = 0;
-  int t3 = handleDir_1(test_d_4, test_d_op1);
+  handleDir_1(test_d_4, test_d_op1);
   printf("T3: LC: exp: 0, is: %d\n", location_counter);
   // BYTE 7.
   location_counter = 0;
-  int t4 = handleDir_1(test_d_2, test_d_op2);
+  handleDir_1(test_d_2, test_d_op2);
   printf("T4: LC: exp: 1, is: %d\n", location_counter);
   // Byte $ff
   location_counter = 0;
-  int t5 = handleDir_1(test_d_2, test_d_op3);
+  handleDir_1(test_d_2, test_d_op3);
   printf("T5: LC: exp: 1, is: %d\n", location_counter);
   // BYTE R8
   location_counter = 0;
-  int t6 = handleDir_1(test_d_2, test_d_op4);
+  handleDir_1(test_d_2, test_d_op4);
   printf("T6: LC: exp: 1, is: %d\n", location_counter);
   // BYTE test_label_1
   location_counter = 0;
-  int t7 = handleDir_1(test_d_2, test_label_1);
+  handleDir_1(test_d_2, test_label_1);
   printf("T7: LC: exp: 1, is: %d\n", location_counter);
   // BYTE test_label_2
   location_counter = 0;
-  int t8 = handleDir_1(test_d_5, test_label_2);
+  handleDir_1(test_d_5, test_label_2);
   printf("T8: LC: exp: 0, is: %d\n", location_counter);
 
   

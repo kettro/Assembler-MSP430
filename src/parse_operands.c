@@ -89,13 +89,15 @@ int parseOperands(char* operand, OperandVal* val)
       }else{ // constant
         if(*operand_ptr == '$'){ // hex
           operand_ptr++;
-          val->val0 = strtol(operand_ptr, NULL, 16); // allows for #$FFFF, for example
+          val->val1 = strtol(operand_ptr, NULL, 16); // allows for #$FFFF, for example
         }else{ // non-hex, decimal
-          val->val0 = strtol(operand_ptr, NULL, 10); // allows for both -# && +#
+          val->val1 = strtol(operand_ptr, NULL, 10); // allows for both -# && +#
         }
       }
       val->mode = IMMEDIATE;
-      val->type0 = LABELTYPE;
+      val->type1 = LABELTYPE;
+      val->val0 = 0;
+      val->type0 = REGISTER;
       return 1;
     }
     default:{

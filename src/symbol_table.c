@@ -127,6 +127,7 @@ void initSymbolTable(void)
   Root.name = NULL;
   Root.next = NULL;
   Root.value = 0;
+  addSymbol("ZERO", 0, KNOWN);
 }
 
 int isLabel(char* token)
@@ -151,7 +152,6 @@ int handleLabel_1(char* label, char* operand)
   }
   char dup[strlen(operand)];
   strcpy(dup, operand);
-  uint16_t value;
   uint16_t temp_lc = location_counter;
   char* command = strtok(dup, " \t\n\r;"); // shouldn't be needed, but being safe
   char* argument = strtok(NULL, "\n\r\t"); // args are the next non null

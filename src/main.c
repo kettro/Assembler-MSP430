@@ -8,6 +8,8 @@
 // Local Defines
 // Local Variables
 uint16_t location_counter;
+FILE* s19_file;
+FILE* asm_file;
 // Local Prototypes
 // Extern Variables
 // Extern Prototypes
@@ -23,7 +25,11 @@ extern void symbolTableTest(void);
 
 int main(int argc, char* argv[])
 {
-  testSuite('1'); // Inst table test
+  //s19_file = fopen("out.s19", "w");
+  //asm_file = fopen("test.asm", "r");
+  testSuite('e'); // Inst table test
+  //fclose(s19_file);
+  //fclose(asm_file);
 
   // initSymbolTable();
   // => get filename

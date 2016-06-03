@@ -9,9 +9,10 @@
 // Local Variables
 static char loc_cntr_inc_via_addrmode[] = {0,2,2,2,2,0,0,2};
 // Local Function Prototypes
-int secondPass(char* infilename, char* outfilename);
+int secondPass(void);
 // Extern Variables
 extern uint16_t location_counter;
+extern FILE* asm_file;
 // Extern Function Prototypes
 extern int isBlank(char* token);
 extern int isDir(char* token);
@@ -37,10 +38,8 @@ extern int isLabel(char* token);
 //  handleDir_2
 //  emit as needed;
 
-int secondPass(char* infilename, char* outfilename)
+int secondPass(void)
 {
-  FILE* infile = fopen(infilename, "r");
-  FILE* outfile = fopen(outfilename, "w");
   char line[MAX_LINE_LENGTH];
   char dup[MAX_LINE_LENGTH];
 
@@ -50,7 +49,7 @@ int secondPass(char* infilename, char* outfilename)
   int i = 0;
   location_counter = 0;
 
-  while(fgets(line, sizeof(line), infile)){
+  while(fgets(line, sizeof(line), asm_file)){
     printf("LC: %d\n", location_counter);
     strcpy(dup, line);
     first_token_ptr = strtok(dup, " ;");

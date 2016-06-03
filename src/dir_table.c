@@ -24,12 +24,11 @@ int isDir(char* token);
 Dir* getDir(char* token);
 int handleDir_1(char* command, char* operand);
 int handleDir_2(char* command, char* operand);
-// int handleDir_2(Dir* dir_ptr, char* operand);
 // Extern Variables
 extern uint16_t location_counter;
 // Extern Function Prototypes
 extern int parseDirOperand(char* operand, OperandVal* val);
-extern void emit(uint16_t lc, uint8_t value); // defined in an srec generator file
+extern void emit(uint8_t value, uint16_t lc); // defined in an srec generator file
 extern void triggerEmit(uint16_t lc);        // "", sends the emit file if >32, or if triggered
 // Definitions
 
@@ -86,6 +85,11 @@ int handleDir_1(char* command, char* operand)
   DirName name = dir_ptr->enum_name;
   OperandVal val;
   if(name == ASCII_D){
+    /* 
+    strtok(dup_op, "\"");
+    ascii_str = strtok(NULL, "\"");
+    ascii_length += strlen(ascii_str);
+     */
     if(*op_ptr != '\"'){
       // error: ascii must be a string
       return 1;
@@ -171,7 +175,7 @@ int handleDir_2(char* command, char* operand)
   char* ascii_str;
 
   //determine emit_length
-  uint8_t emit_length = 2; // default max to 2
+  uint8_t ascii_length = 0; // default max to 2
   if(operand != NULL && name != ASCII_D){ // get values for std dirs
     value = strtol(dup_op, NULL, 10);
     OperandVal val;
@@ -184,9 +188,9 @@ int handleDir_2(char* command, char* operand)
   }else if(operand != NULL && name == ASCII_D){ // ascii is special!
     strtok(dup_op, "\"");
     ascii_str = strtok(NULL, "\"");
-    emit_length += strlen(ascii_str);
+    ascii_length += strlen(ascii_str);
   }
-  char emit_array[emit_length]; // reserve an array large enough to emit anything
+  char emit_array[ascii_length]; // reserve an array large enough to emit anything
   switch(name){
     case END_D:
       return 0; // end compilation
@@ -197,8 +201,10 @@ int handleDir_2(char* command, char* operand)
       triggerEmit(location_counter);
       return 1;
     case ALIGN_D:
-      location_counter += location_counter % 2; // ensure even LC
-      triggerEmit(location_counter);
+      if(location_counter % 2){
+        location_counter++;
+        triggerEmit(location_counter);
+      }
       return 1;
     case ORG_D:
       location_counter = value;
@@ -206,11 +212,12 @@ int handleDir_2(char* command, char* operand)
       return 1;
     case BYTE_D:
       // need to get the value into memory at the location_counter: for all 3 below
-      emit_length = 1;
+      ascii_length = 1;
       emit_array[0] = value & 0xFF;
       break;
     case WORD_D:
       // emit_length = 2; // set above
+      // double check the endedness of the msp
       emit_array[0] = value & 0xFF;
       emit_array[1] = (value >> 8) & 0xFF;
       break;
@@ -223,8 +230,8 @@ int handleDir_2(char* command, char* operand)
       return 1;
   }
   // send off the data in emits;
-  for(i = 0; i < emit_length; i++){
-    emit(location_counter, (uint8_t)emit_array[i]);
+  for(i = 0; i < ascii_length; i++){
+    emit((uint8_t)emit_array[i], location_counter);
     location_counter++;
   }
   return 1;

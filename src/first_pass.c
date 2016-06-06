@@ -8,6 +8,7 @@
 #define MAX_LINE_LENGTH     256
 // Local Variables
 static char loc_cntr_inc_via_addrmode[] = {0 , 2, 2, 2, 0, 0, 2};
+int error_count = 0;
 // Local Function Prototypes
 int firstPass(void);
 int isBlank(char* token);
@@ -63,7 +64,7 @@ int firstPass(void)
     else if(isDir(first_token_ptr)){
       if(handleDir_1(first_token_ptr, operand_token_ptr) == 0){ 
         /*is END*/ 
-        return 1; 
+        break;
       }
       // next loop please
       continue;
@@ -73,15 +74,23 @@ int firstPass(void)
       // check if the sysmbol is already in the table
       if(handleLabel_1(first_token_ptr, operand_token_ptr) == 0){
         // if handleLabel => 0: found END, end compilation
-        return 1;
+        break;
       }
       // next loop please
       continue;
     }
   }
+  if(error_count != 0){
+    return 0;
+  }
   return 1;
 }
 
+/* isBlank
+ * Desc: check if a line is blank
+ * Param: a string
+ * Return: boolean, is or isn't blank
+ */
 int isBlank(char* token)
 {
   if(token == NULL || *token == '\n' || *token == '\r' || *token == '\0'){ return 1; }

@@ -80,6 +80,8 @@ void handleInst_2(char* command, char* operands);
 
 // Extern Variables
 extern uint16_t location_counter; // global
+extern int error_count;
+extern FILE* error_file;
 // Extern Function Prototypes
 extern int parseType1(char* operand, OperandVal* src);
 extern int parseType2(char* operand, OperandVal* src, OperandVal* dst);
@@ -87,6 +89,12 @@ extern int parseType3(char* operand, OperandVal* src);
 extern void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc);
 // Definitions
 
+/* isInst?
+ * Desc: determine if a string is an instruction
+ * Param: string
+ * Return: boolean
+ * Results: if is an instruction, return true, else false
+ */
 int isInst(char* token)
 {
   char dup[strlen(token)];
@@ -103,6 +111,12 @@ int isInst(char* token)
   return 0;
 }
 
+/* Get Inst
+ * Desc: retrieves an instruction
+ * Param: instruction name string
+ * Return: pointer to the requested instruction
+ * Results: returns inst, or null if unfound
+ */
 Inst* getInst(char* token)
 {
   int i;
@@ -140,6 +154,8 @@ void handleInst_1(char* command, char* operands)
       // one operand;
       parseType1(operands, &src);
       if(src.mode == BAD_ADDR){
+        error_count++;
+        fprintf(error_file, "Error @%d: Bad Addressing mode, type 1\n", location_counter); 
         // error: badd addr
         return;
       }
@@ -148,15 +164,22 @@ void handleInst_1(char* command, char* operands)
       break;
     case TWO:
       if(parseType2(operands, &src, &dst) == 0){
+        error_count++;
+        fprintf(error_file, "Error @%d: Bad Addressing Mode, type 2\n", location_counter);
         // error:
         return;
       }
       if(dst.mode == BAD_ADDR || src.mode == BAD_ADDR){
+        error_count++;
         // error: bad addr
+        fprintf(error_file, "Error @%d: Bad Addressing Mode, type 2, dst\n", location_counter);
         return;
       }
       if(dst.mode == INDIRECT || dst.mode == INDIRECT_AA || dst.mode == IMMEDIATE){
+        error_count++;
+        fprintf(error_file, "Error @%d: Improper Addressing Mode, type 2, dst\n", location_counter);
         // error: improper dst addr mode
+        dst.mode = BAD_ADDR;
         return;
       }
       location_counter += 2; // for the inst itself
@@ -164,12 +187,20 @@ void handleInst_1(char* command, char* operands)
       location_counter += loc_cntr_inc_via_addrmode[dst.mode];
       break;
     case JUMP:
-      location_counter += location_counter % 2; // command must lie on even lc: autoalign
+      if((location_counter % 2) != 0){
+        // error: must be even
+        error_count++;
+        fprintf(error_file, "Error @%d: location counter must be even for a JUMP\n", location_counter);
+      }
       if(parseType3(operands, &src) == 0){
+        error_count++;
+        fprintf(error_file, "Error @%d: error in operands\n", location_counter);
         // error in parsing
         return;
       }
       if(src.mode == BAD_ADDR){
+        error_count++;
+        fprintf(error_file, "Error @%d: Bad Addressing Mode, type 3\n", location_counter);
         //error: bad addr
         return;
       }

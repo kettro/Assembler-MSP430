@@ -10,7 +10,7 @@
 // Defines
 #define MAX_EMIT_LENGTH     32
 // Local Variables
-Emit current_emit = { .index = 0, .initial_lc = 0 };
+Emit current_emit = { .index = 0, .initial_lc = 0, .checksum = 0 };
 static char loc_cntr_inc_via_addrmode[] = {0,2,2,2,0,0,2};
 static int as_val[] = {0,1,1,1,2,3,3};
 static int ad_val[] = {0,1,1,1};
@@ -23,33 +23,39 @@ extern uint16_t location_counter;
 extern FILE* s19_file;
 // Extern Function Prototypes
 
+/* Emit
+ * Desc: Adds a byte to the current S19 record
+ * Param: 8-bit value, 16-bit location counter
+ * Return: none
+ * Results: adds to the current record, sends record if full
+ */
 void emit(uint8_t value, uint16_t lc)
 {
   // gets data, and tacks it onto the end of the current_emit, and incs the index
   current_emit.message[current_emit.index] = value;
   current_emit.index += 1;
+  current_emit.checksum += value;
   location_counter++;
-  printf("lc = %d\n", location_counter);
-  printf("index = %d\n", current_emit.index);
-  printf("message = %02x = value = %02x\n", current_emit.message[current_emit.index - 1], value);
-  if(current_emit.index == MAX_EMIT_LENGTH){
+  if(current_emit.index == MAX_EMIT_LENGTH-1){ // 32 - 1 => 32 postions
     triggerEmit(lc);
   }
 }
 
+/* Trigger Emit
+ * Desc: send out the current record to the s19 file.
+ * Param: location counter
+ * Return: none
+ * Results: printf to the .s19 file; calculates the checksum; resets the current_emit, at the passed lc
+ */
 void triggerEmit(uint16_t lc)
 {
-  uint8_t checksum = 145; // ???? need to calc this actually;
   int i;
-  //fprintf(s19_file, "S1");
-  printf("S1%04x", current_emit.initial_lc);
-  //fprintf(s19_file, "%04x", current_emit.initial_lc);
+  uint8_t checksum = ~(current_emit.checksum & 0xFF);
+  fprintf(s19_file, "S1%04x", current_emit.initial_lc);
   for(i = 0; i < current_emit.index; i++){
-    printf("%02x", current_emit.message[i]);
-    //fprintf(s19_file, "%02x", current_emit.message[i]);
+    fprintf(s19_file, "%02x", current_emit.message[i]);
   }
-  //fprintf(s19_file, "%02x\n", checksum);
-  printf("%02x\n", checksum);
+  fprintf(s19_file, "%02x\n", checksum);
 
   // calculate the checksum of current_emit
   // fprintf to the .s19 file
@@ -59,11 +65,18 @@ void triggerEmit(uint16_t lc)
   }
   current_emit.index = 0;
   current_emit.initial_lc = lc;
+  current_emit.checksum = 0;
   return;
   // set new location counter to lc
   // return
 }
 
+/* Emit I
+ * Desc: emit for instructions
+ * Param: Instruction pointer, source, destination operands, location counter
+ * Return: none
+ * Results: given an instruction type, processes and emits the proper value(s)
+ */
 void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
 {
   // check if the opvals are null: if so, then ignore it. 
@@ -83,7 +96,6 @@ void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
     sval1 = src->val1;
   }
   sval0 = src->val0;
-  if(inst_ptr == NULL) printf("sdf\n");
 
   if(dst != NULL){
     ad = ad_val[dst->mode];
@@ -92,7 +104,6 @@ void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
       dval1 = dst->val1;
     }
   }
-  printf("src mode: %d\n", src->mode);
   switch(inst_ptr->type){
     case ONE:
       inst1.value = 0;

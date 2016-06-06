@@ -16,6 +16,8 @@ int parseType1(char* operand, OperandVal* src);
 int parseType2(char* operands, OperandVal* src, OperandVal* dst);
 int parseType3(char* operand, OperandVal* dst);
 // Extern Variables
+extern int error_count;
+extern FILE* error_file;
 // Extern Prototypes
 extern void addSymbol(char* name, uint16_t value, SymbolType type);
 extern Symbol* getSymbol(char* name);
@@ -24,11 +26,17 @@ extern int isLabel(char* token);
 
 // Most of this is lifted verbatim from Dr.Hughes' supplied function
 // personal additions include the struct use, as well as some sections
+
+/* Parse Operands
+ * Desc: Parse Operands to determine addressing modes and values
+ * Param: Operand string, value struct
+ * Return: boolean, if errors => 0
+ * Results: fill the OperandVal struct with results of the parse.
+ */
 int parseOperands(char* operand, OperandVal* val)
 {
   Symbol* symbol_ptr;
   char* operand_ptr;
-  char* register_ptr;
   char* alphanum_ptr;
   int immediate_num;
   int sanity;
@@ -127,6 +135,9 @@ int parseOperands(char* operand, OperandVal* val)
             val->mode = RELATIVE;
             val->type0 = LABELTYPE;
             return 1;
+          case UNKNOWN:
+            // error
+            break;
         }
       }
       return 0;
@@ -134,6 +145,12 @@ int parseOperands(char* operand, OperandVal* val)
   }
 }
 
+/* Parse Dir Operands
+ * Desc: Parse operands of directives
+ * Param: operand string, value constainer struct
+ * Return: boolean
+ * Results: fills OperandVal struct with values: note: for label operands, val1 => known/unknown
+ */
 int parseDirOperand(char* operand, OperandVal* val)
 {
   // parsing a directive's operands: not the same as an inst's!
@@ -172,6 +189,12 @@ int parseDirOperand(char* operand, OperandVal* val)
   return 1;
 }
 
+/* Parse Type 1 Operands
+ * Desc: parse the arguments of a type 1 instruction
+ * Param: operand string, value constaier struct
+ * Return: boolean: if error => 0, else 1
+ * Results: produces the values for type 1 src into the OperandVal struct
+ */
 int parseType1(char* operand, OperandVal* src)
 {
   // parsing a type1 inst operand
@@ -191,12 +214,15 @@ int parseType1(char* operand, OperandVal* src)
   return 1;
 
 }
+
+/* Parse Type 2 Operands
+ * Desc: Parse operands of type 2 instructions
+ * Param: operands string, Value container struct
+ * Return: boolean
+ * Results: Fills the source and destination OperandVal structs with relevant values
+ */
 int parseType2(char* operands, OperandVal* src, OperandVal* dst)
 {
-  // parsing type2 operands
-  // 2 operands:
-  // src => 7 addr modes, dst => 4 addr_modes
-  // divide up; check that both aren't null
   char dup[strlen(operands)];
   strcpy(dup, operands);
   char* op1_ptr;
@@ -223,6 +249,13 @@ int parseType2(char* operands, OperandVal* src, OperandVal* dst)
   return 1;
 
 }
+
+/* Parse Type 3 Operands
+ * Desc: Parse operands of type 3 instructions
+ * Param: operand string, value constainer struct
+ * Return: boolean of errors
+ * Results: Fill the OperandVal struct with values
+ */
 int parseType3(char* operand, OperandVal* dst)
 {
   char dup[strlen(operand)];
@@ -234,6 +267,7 @@ int parseType3(char* operand, OperandVal* dst)
   }
   if(!strtok(NULL, " ;\n\t\r")){
     // error: too many operands.
+    fprintf(error_file, "Error: too many operands in type 3 argument\n");
     return 0;
   }
   if(parseOperands(op1_ptr, dst) == 0){
@@ -241,8 +275,8 @@ int parseType3(char* operand, OperandVal* dst)
     return 0;
   }
   if(dst->val0 % 2){
+    fprintf(error_file, "Error: location odd for Jump location\n");
     //error: odd location;
   }
   return 1;
-  // parse jumps
 }

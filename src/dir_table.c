@@ -26,12 +26,20 @@ int handleDir_1(char* command, char* operand);
 int handleDir_2(char* command, char* operand);
 // Extern Variables
 extern uint16_t location_counter;
+extern int error_count;
+extern FILE* error_file;
 // Extern Function Prototypes
 extern int parseDirOperand(char* operand, OperandVal* val);
 extern void emit(uint8_t value, uint16_t lc); // defined in an srec generator file
 extern void triggerEmit(uint16_t lc);        // "", sends the emit file if >32, or if triggered
 // Definitions
 
+/* isDir
+ * Desc: check is a string is a directive
+ * Param: string, dir table
+ * Return: boolean; is or isn't a directive
+ * Results: none
+ */
 int isDir(char* token)
 {
   int i;
@@ -49,6 +57,12 @@ int isDir(char* token)
   return 0;
 }
 
+/* getDir
+ * Desc: retrieves a directive
+ * Param: string, dir table
+ * Return: pointer to the directive requested
+ * Results: -
+ */
 Dir* getDir(char* token)
 {
   int i;
@@ -66,7 +80,12 @@ Dir* getDir(char* token)
   return NULL;
 }
 
-// Handling 1st Pass Directives
+/* Handle Dir 1
+ * Desc: Handle 1st pass Directives
+ * Param: command string and operand string
+ * Return: boolean, if END is reached
+ * Results: modify LC, add symbols
+ */
 int handleDir_1(char* command, char* operand)
 {
   char dup_op[strlen(operand)];
@@ -85,12 +104,9 @@ int handleDir_1(char* command, char* operand)
   DirName name = dir_ptr->enum_name;
   OperandVal val;
   if(name == ASCII_D){
-    /* 
-    strtok(dup_op, "\"");
-    ascii_str = strtok(NULL, "\"");
-    ascii_length += strlen(ascii_str);
-     */
     if(*op_ptr != '\"'){
+      error_count++;
+      fprintf(error_file, "Error @%d: ASCII operand must be in a string\n", location_counter);
       // error: ascii must be a string
       return 1;
     }else{ // op_ptr == ", count number of args in string
@@ -100,6 +116,8 @@ int handleDir_1(char* command, char* operand)
         op_ptr++;
       }
       if(i == strlen(operand) || *op_ptr != '\"'){
+        error_count++;
+        fprintf(error_file, "Error @%d: ASCII operand must have enclosed quotes\n", location_counter);
         // error: went too far 
         return 1;
       }
@@ -108,11 +126,15 @@ int handleDir_1(char* command, char* operand)
     }
   }else{ // Not ascii: soome thing else
     if(parseDirOperand(dup_op, &val) == 0){
+      error_count++;
+      fprintf(error_file, "Error @%d: Error encountered in op_parse\n", location_counter);
       // error: error in op parse
       return 1;
     }
     if(&val != NULL){ // if no operands => ALIGN, or END
       if((val.type0 == LABELTYPE && val.type1 == UNKNOWN) && (name == ORG_D || name == BSS_D)){
+        error_count++;
+        fprintf(error_file, "Error @%d: No Forward Declaration Allowed for BSS or ORG\n", location_counter);
         // no forward declarations for org or bss
         // error
         return 1;
@@ -125,10 +147,14 @@ int handleDir_1(char* command, char* operand)
       // stop compilation
       return 0;
     case EQU_D:
+      error_count++;
+      fprintf(error_file, "Error @%d: EQU must have a Label\n", location_counter);
       // error
       return 1;
     case ALIGN_D:
       if(dup_op[0] != '\0'){ 
+        error_count++;
+        fprintf(error_file, "Error @%d: No arguments allowed for ALIGN\n", location_counter);
         //error
         return 1;
       }
@@ -144,7 +170,9 @@ int handleDir_1(char* command, char* operand)
     location_counter += value;
   }else if(name == BYTE_D){
     if((value & 0xFF) != value){ // check if 8 bit value
-     // error- not 8 bits! (or warning?)
+      error_count++;
+      fprintf(error_file, "Error @%d: BYTE operand not 8 bits\n", location_counter);
+      // error- not 8 bits! (or warning?)
     }else{
       location_counter += 1;
     }
@@ -155,8 +183,12 @@ int handleDir_1(char* command, char* operand)
   return 1;
 }
 
-
-// Handling 2nd Pass Directives
+/* handle Dir 2
+ * Desc: Handling 2nd Pass Directives
+ * Param: command and operand strings
+ * Return: boolean, if END reached, or if an error is reached
+ * Results: emit data and trigger emits on discontinuities
+ */
 int handleDir_2(char* command, char* operand)
 {
   char dup_op[strlen(operand)];
@@ -168,6 +200,7 @@ int handleDir_2(char* command, char* operand)
   for(i = 0; i < strlen(dup_com); i++){
     dup_com[i] = toupper(dup_com[i]);
   }
+  op_ptr = &(dup_op[0]);
   uint16_t value = 0;
   Dir* dir_ptr = getDir(dup_com); // get the directive, as is a directive
   DirName name = dir_ptr->enum_name;
@@ -181,18 +214,18 @@ int handleDir_2(char* command, char* operand)
     OperandVal val;
     if(parseDirOperand(operand, &val) == 0){
       //error
-    }else if(val.mode != IMMEDIATE || val.mode != ABSOLUTE){
-      // error: improper mode
-      return 1;
     }
   }else if(operand != NULL && name == ASCII_D){ // ascii is special!
-    strtok(dup_op, "\"");
-    ascii_str = strtok(NULL, "\"");
-    ascii_length += strlen(ascii_str);
+    if(*op_ptr == '\"'){ // yay
+      op_ptr++;
+      ascii_str = strtok(op_ptr, "\"");
+      ascii_length += strlen(ascii_str);
+    }else{ return 0; } // error
   }
   char emit_array[ascii_length]; // reserve an array large enough to emit anything
   switch(name){
     case END_D:
+      triggerEmit(location_counter);
       return 0; // end compilation
     case EQU_D:
       return 1;
@@ -216,23 +249,21 @@ int handleDir_2(char* command, char* operand)
       emit_array[0] = value & 0xFF;
       break;
     case WORD_D:
-      // emit_length = 2; // set above
       // double check the endedness of the msp
       emit_array[0] = value & 0xFF;
       emit_array[1] = (value >> 8) & 0xFF;
       break;
     case ASCII_D:
-      // emit_length = strlen(ascii_str); // set above
       strcpy(emit_array, ascii_str);
       break;
     default:
+      fprintf(error_file, "Error @%d: Directive not recognized\n", location_counter);
       //error
       return 1;
   }
   // send off the data in emits;
   for(i = 0; i < ascii_length; i++){
     emit((uint8_t)emit_array[i], location_counter);
-    location_counter++;
   }
   return 1;
 }

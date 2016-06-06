@@ -10,6 +10,7 @@ extern void instTable_test(void);
 extern void dirTable_test(void);
 extern void firstPass_test(void);
 extern void emit_test(void);
+extern void secondPass_test(void);
 
 void testSuite(char test_to_run)
 {
@@ -32,6 +33,7 @@ void testSuite(char test_to_run)
       break;
     case '2': // Second Pass
     case 2:   // ""
+      secondPass_test();
       break;
     case 'E':
     case 'e':

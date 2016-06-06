@@ -47,6 +47,8 @@ int handleLabel_1(char* label, char* operand);
 int handleLabel_2(char* label, char* operand);
 // Extern Variables
 extern uint16_t location_counter;
+extern int error_count;
+extern FILE* error_file;
 // Extern Prototypes
 extern int isDir(char* operand);
 extern int handleDir_1(char* command, char* operand);
@@ -70,7 +72,8 @@ void addSymbol(char* name, uint16_t value, SymbolType type)
     Root.next = new_symb;
     table_length++;
   } else{ // not a new symbol: error
-    fprintf(stderr, "Error: attempting to add a duplicate entry: %s\n", name);
+    error_count++;
+    fprintf(error_file, "Error @%d: attempting to add a duplicate entry: %s\n", location_counter, name);
   }
 }
 
@@ -110,7 +113,6 @@ int findUnknowns(void)
     if(temp->type == UNKNOWN){
       i++;
       // error
-      printf("Unknown found for symbol %s\n", temp->name);
     }
     temp = temp->next;
   }
@@ -167,6 +169,8 @@ int handleLabel_1(char* label, char* operand)
       // is EQU: handle differently than else
       parseDirOperand(argument, &val); // get the values of the operands
       if(val.type1 == UNKNOWN){
+        error_count++;
+        fprintf(error_file, "Error @%d: EQU must take only KNOWN labels\n", location_counter);
         //error- must be known for EQU
         return 1; 
       }
@@ -187,6 +191,8 @@ int handleLabel_1(char* label, char* operand)
     return 1;
   }
   else{
+    error_count++;
+    fprintf(error_file, "Error @%d: Labels must be followed by an inst or dir\n", location_counter);
     // error; must be either isnt or dir next
     return 1;
   }
@@ -200,6 +206,8 @@ int handleLabel_2(char* label, char* operand)
   strcpy(dup, operand);
   Symbol* symbol_ptr = getSymbol(label);
   if(symbol_ptr->value != location_counter){
+    error_count++;
+    fprintf(error_file, "Error @%d: an initial Label's value must match the LC\n", location_counter);
     // error= a initial label must match the lc! 
     return 1;
   }
@@ -213,6 +221,8 @@ int handleLabel_2(char* label, char* operand)
       return 0;
     }
   }else{
+    error_count++;
+    fprintf(error_file, "Error @ 2nd pass: label not followed by dir or inst\n");
     // error;
     return 1;
   }

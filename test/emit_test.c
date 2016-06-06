@@ -17,6 +17,7 @@ extern void parseOperands(char* str, OperandVal* src);
 extern void emit(uint8_t value, uint16_t lc);
 extern void triggerEmit(uint16_t lc);
 extern void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc);
+extern void initSymbolTable(void);
 void emit_test(void);
 void emit_t(void);
 void triggerEmit_test(void);
@@ -41,6 +42,7 @@ static char ch4[] = "ZERO";
 void emit_test(void)
 {
   location_counter = 0;
+  initSymbolTable();
   //emit_t();
   //triggerEmit_test();
   emit_I_test();
@@ -65,6 +67,7 @@ void triggerEmit_test(void)
 
 void emit_I_test(void)
 {
+  
   Inst in1 = {"PUSH", 0x1200, 1, WORD};
   Inst in2 = {"RETI", 0x1300, 0};
   Inst in3 = {"MOV",  0x4000, 2, WORD};

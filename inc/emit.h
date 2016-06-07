@@ -1,3 +1,6 @@
+#ifndef EMIT_H
+#define EMIT_H
+
 #include "enum_types.h"
 
 typedef struct Emit{
@@ -6,3 +9,5 @@ typedef struct Emit{
   uint16_t initial_lc;
   uint16_t checksum;
 }Emit;
+
+#endif

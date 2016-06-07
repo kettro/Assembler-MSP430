@@ -6,6 +6,8 @@ TDIR=./test
 IDIR=./inc
 ODIR=./output
 
+DIRGUARD=@mkdir -p $(@D)
+
 EXEC=$(ODIR)/a
 SRCS= $(wildcard $(SDIR)/*.c)
 TSTS= $(wildcard $(TDIR)/*.c)
@@ -19,9 +21,11 @@ $(EXEC):$(OUT_OBJS) $(TEST_OBJS)
 	$(CC) $(OUT_OBJS) $(TEST_OBJS) -o $(EXEC)
 
 $(ODIR)/%.o:$(TDIR)/%.c
+	$(DIRGUARD)
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 $(ODIR)/%.o:$(SDIR)/%.c
+	$(DIRGUARD)
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 clean:

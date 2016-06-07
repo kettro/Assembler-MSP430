@@ -43,7 +43,6 @@ int firstPass(void)
   char nul = '\0';
   int i;
   while(fgets(line, sizeof(line), asm_file)){
-    printf("%d\n", location_counter);
     strcpy(line_dup, line);
     first_token_ptr = strtok(line_dup, " \n\t\r;"); // tokenize on space, CR, endline, ; to get tk1
     if(isBlank(first_token_ptr)){ // no entry on the line

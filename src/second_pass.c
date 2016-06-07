@@ -41,7 +41,6 @@ int secondPass(void)
   location_counter = 0;
 
   while(fgets(line, sizeof(line), asm_file)){
-    printf("%d\n", location_counter);
     strcpy(dup, line);
     first_token_ptr = strtok(dup, " \n\r\t;");
     if(isBlank(first_token_ptr)){

@@ -43,8 +43,8 @@ void emit_test(void)
 {
   location_counter = 0;
   initSymbolTable();
-  //emit_t();
-  //triggerEmit_test();
+  emit_t();
+  triggerEmit_test();
   emit_I_test();
 }
 
@@ -81,7 +81,5 @@ void emit_I_test(void)
   printf("expect: 0x1223, 1300, ; is: \n");
   triggerEmit(location_counter + 10);
   triggerEmit(location_counter);
-  
-
 }
 

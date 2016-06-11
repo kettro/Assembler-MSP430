@@ -51,6 +51,7 @@ int main(int argc, char* argv[])
     fclose(asm_file);
     return 0;
   }
+  
   fclose(asm_file);
   asm_file = fopen(argv[1], "r"); // rewind the file
   secondPass();

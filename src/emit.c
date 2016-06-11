@@ -50,8 +50,15 @@ void emit(uint8_t value, uint16_t lc)
 void triggerEmit(uint16_t lc)
 {
   int i;
-  uint8_t checksum = ~(current_emit.checksum & 0xFF);
-  fprintf(s19_file, "S1%04x", current_emit.initial_lc);
+  if(current_emit.index == 0){ 
+    current_emit.initial_lc = lc;
+    return;
+  }
+  uint8_t checksum = ((current_emit.initial_lc) & 0xFF) + ((current_emit.initial_lc >> 8) & 0xFF);
+  uint8_t length = current_emit.index + 3;
+  checksum += length;
+  checksum += ~(current_emit.checksum) & 0xFF;
+  fprintf(s19_file, "S1%02x%04x", length, current_emit.initial_lc);
   for(i = 0; i < current_emit.index; i++){
     fprintf(s19_file, "%02x", current_emit.message[i]);
   }
@@ -91,7 +98,6 @@ void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
     return;
   }
   as = as_val[src->mode];
-  sval0 = src->val0;
   if(loc_cntr_inc_via_addrmode[src->mode]){
     sval1 = src->val1;
   }
@@ -99,12 +105,14 @@ void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
 
   if(dst != NULL){
     ad = ad_val[dst->mode];
-    dval0 = dst->val0;
     if(loc_cntr_inc_via_addrmode[dst->mode]){
       dval1 = dst->val1;
     }
+    dval0 = dst->val0;
   }
   switch(inst_ptr->type){
+    case NONE:
+      break;
     case ONE:
       inst1.value = 0;
       inst1.value |= inst_ptr->opcode;
@@ -119,11 +127,11 @@ void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
     case TWO:
       inst2.value = 0;
       inst2.value |= inst_ptr->opcode;
-      inst2.src = src->val0;
+      inst2.src = sval0;
       inst2.ad = ad;
       inst2.bw = inst_ptr->b_w;
       inst2.as = as;
-      inst2.dst = dst->val0;
+      inst2.dst = dval0;
       emit_val = inst2.value & 0xFF;
       emit(emit_val, lc++);
       emit_val = (inst2.value >> 8) & 0xFF;
@@ -132,13 +140,12 @@ void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
     case JUMP:
       inst3.value = 0;
       inst3.value |= inst_ptr->opcode;
-      inst3.addr = (src->val0 - (location_counter - 2)/2); // using the LC to get this to work
+      inst3.addr = (sval0 - (location_counter)) / 2; // using the LC, div by 2
       emit_val = inst3.value & 0xFF;
       emit(emit_val, lc++);
       emit_val = (inst3.value >> 8) & 0xFF;
       emit(emit_val, lc++);
-      // need to add more emits for more args, depending on mode
-      break;
+      return;
   }
   if(loc_cntr_inc_via_addrmode[src->mode]){
     emit_val = sval1 & 0xFF;

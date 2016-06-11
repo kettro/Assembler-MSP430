@@ -211,10 +211,11 @@ int handleDir_2(char* command, char* operand)
   uint8_t ascii_length = 0; // default max to 2
   if(operand != NULL && name != ASCII_D){ // get values for std dirs
     value = strtol(dup_op, NULL, 10);
-    OperandVal val;
+    val.type1 = 2;
     if(parseDirOperand(operand, &val) == 0){
       //error
     }
+    value = val.val0;
   }else if(operand != NULL && name == ASCII_D){ // ascii is special!
     if(*op_ptr == '\"'){ // yay
       op_ptr++;
@@ -267,4 +268,3 @@ int handleDir_2(char* command, char* operand)
   }
   return 1;
 }
-

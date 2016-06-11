@@ -7,7 +7,6 @@
 // Defines
 #define MAX_LINE_LENGTH     256
 // Local Variables
-static char loc_cntr_inc_via_addrmode[] = {0 , 2, 2, 2, 0, 0, 2};
 int error_count = 0;
 // Local Function Prototypes
 int firstPass(void);
@@ -41,13 +40,13 @@ int firstPass(void)
   char* first_token_ptr; // track the first token
   char* operand_token_ptr; // track the operands
   char nul = '\0';
-  int i;
   while(fgets(line, sizeof(line), asm_file)){
     strcpy(line_dup, line);
-    first_token_ptr = strtok(line_dup, " \n\t\r;"); // tokenize on space, CR, endline, ; to get tk1
+    first_token_ptr = strtok(line_dup, " \n\t\r"); // tokenize on space, CR, endline, ; to get tk1
     if(isBlank(first_token_ptr)){ // no entry on the line
       continue;
     }
+    
     operand_token_ptr = strtok(NULL, "\n\r\t"); // tokenize, have the opers and the comments
     if(operand_token_ptr == NULL){ // case where nothing after the operand
       operand_token_ptr = &nul;
@@ -92,6 +91,6 @@ int firstPass(void)
  */
 int isBlank(char* token)
 {
-  if(token == NULL || *token == '\n' || *token == '\r' || *token == '\0'){ return 1; }
+  if(token == NULL || *token == '\0' || *token == ';'){ return 1; }
   else { return 0; }
 }

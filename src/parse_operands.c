@@ -8,7 +8,6 @@
 #include "symbol_table_data_structures.h"
 // Defines
 // Local Variables
-static char loc_cntr_inc_via_addrmode[] = {0, 2, 2, 2, 0, 0, 2};
 // Local Prototypes
 int parseOperands(char* operand, OperandVal* val);
 int parseDirOperand(char* operand, OperandVal* val);
@@ -38,7 +37,6 @@ int parseOperands(char* operand, OperandVal* val)
   Symbol* symbol_ptr;
   char* operand_ptr;
   char* alphanum_ptr;
-  int immediate_num;
   int sanity;
 
   operand_ptr = operand;
@@ -117,27 +115,43 @@ int parseOperands(char* operand, OperandVal* val)
           val->mode = INDEX;
           alphanum_ptr = strtok(operand_ptr, "(");
           symbol_ptr = getSymbol(alphanum_ptr);
+          if(symbol_ptr == NULL){
+            addSymbol(operand_ptr, 0, UNKNOWN); // add the symbol as an unknown if not found initially
+            symbol_ptr = getSymbol(operand_ptr);
+          }
           val->type1 = LABELTYPE;
           val->val1 = symbol_ptr->value;
           alphanum_ptr = strtok(NULL, ")");
           symbol_ptr = getSymbol(alphanum_ptr);
+          if(symbol_ptr == NULL){
+            addSymbol(alphanum_ptr, 0, UNKNOWN); // add the symbol as an unknown if not found
+            symbol_ptr = getSymbol(alphanum_ptr);
+          }
           val->type0 = REGISTER;
           val->val0 = symbol_ptr->value;
           return 1;
         }
+        alphanum_ptr = strtok(alphanum_ptr, " \n\r\t");
         symbol_ptr = getSymbol(alphanum_ptr); // get the symbol from the start of the string;
+        if(symbol_ptr == NULL){
+          addSymbol(alphanum_ptr, 0, UNKNOWN); // add the symbol as an unknown if not found
+          symbol_ptr = getSymbol(alphanum_ptr);
+        }
         switch(symbol_ptr->type){
           case REGISTER:
             val->mode = REG_DIRECT;
             val->type0 = REGISTER;
+            val->val0 = symbol_ptr->value;
             return 1;
           case LABELTYPE:
             val->mode = RELATIVE;
             val->type0 = LABELTYPE;
+            val->val0 = 0;
+            val->val1 = symbol_ptr->value;
             return 1;
           case UNKNOWN:
             // error
-            break;
+            return 1;
         }
       }
       return 0;
@@ -242,7 +256,9 @@ int parseType2(char* operands, OperandVal* src, OperandVal* dst)
     // error: one of the operands is hella broken
     return 0;
   }
-  if(!(parseOperands(op1_ptr, src) && parseOperands(op2_ptr, dst))){
+  int src_result = parseOperands(op1_ptr, src);
+  int dst_result = parseOperands(op2_ptr, dst);
+  if(!src_result && !dst_result){
     // error: badd addr_type, or some shit
     return 0;
   }
@@ -265,11 +281,11 @@ int parseType3(char* operand, OperandVal* dst)
     //error
     return 0;
   }
-  if(!strtok(NULL, " ;\n\t\r")){
+  /*if(!strtok(NULL, " ;\n\t\r")){
     // error: too many operands.
     fprintf(error_file, "Error: too many operands in type 3 argument\n");
     return 0;
-  }
+  }*/
   if(parseOperands(op1_ptr, dst) == 0){
     // error: some addr garbage or whatever
     return 0;

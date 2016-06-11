@@ -154,7 +154,6 @@ int handleLabel_1(char* label, char* operand)
   }
   char dup[strlen(operand)];
   strcpy(dup, operand);
-  uint16_t temp_lc = location_counter;
   char* command = strtok(dup, " \t\n\r;"); // shouldn't be needed, but being safe
   char* argument = strtok(NULL, "\n\r\t"); // args are the next non null
   char is_equ_str[strlen(command)];
@@ -178,7 +177,8 @@ int handleLabel_1(char* label, char* operand)
       return 1; // update and we're done. no inc of LC
     }else{
       // standard directive; add the location counter, and then handle the directive
-      updateSymbol(symbol_ptr, temp_lc);
+      printf("lc = %x\n", location_counter);
+      updateSymbol(symbol_ptr, location_counter);
       if(handleDir_1(command, argument) == 0){
         // END encountered
         return 0;
@@ -186,7 +186,7 @@ int handleLabel_1(char* label, char* operand)
       return 1; 
     }
   }else if(isInst(command)){
-    updateSymbol(symbol_ptr, temp_lc);
+    updateSymbol(symbol_ptr, location_counter);
     handleInst_1(command, argument);
     return 1;
   }

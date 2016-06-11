@@ -18,11 +18,11 @@ OUT_OBJS= $(subst $(SDIR),$(ODIR),$(OBJS))
 TEST_OBJS= $(subst $(TDIR),$(ODIR),$(TOBJS))
 
 $(EXEC):$(OUT_OBJS) $(TEST_OBJS)
-	$(CC) $(OUT_OBJS) $(TEST_OBJS) -o $(EXEC)
+	$(CC) $(CFLAGS) $(OUT_OBJS) $(TEST_OBJS) -o $(EXEC)
 
 $(ODIR)/%.o:$(TDIR)/%.c
 	$(DIRGUARD)
-	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
+	$(CC) $(INCS) -c $< -o $@
 
 $(ODIR)/%.o:$(SDIR)/%.c
 	$(DIRGUARD)

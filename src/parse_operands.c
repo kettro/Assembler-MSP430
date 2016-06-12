@@ -46,7 +46,8 @@ int parseOperands(char* operand, OperandVal* val)
     case '&':{ // absolute addr;
       val->mode = ABSOLUTE;
       symbol_ptr = getSymbol(operand_ptr + 1);
-      val->val0 = symbol_ptr->value;
+      val->val0 = 2; // status register
+      val->val1 = symbol_ptr->value;
       val->type0 = LABELTYPE;
       return 1;
     }
@@ -150,7 +151,7 @@ int parseOperands(char* operand, OperandVal* val)
             val->val1 = symbol_ptr->value;
             return 1;
           case UNKNOWN:
-            // error
+            // error, sort of
             return 1;
         }
       }
@@ -183,9 +184,8 @@ int parseDirOperand(char* operand, OperandVal* val)
     if((symbol_ptr = getSymbol(operand_ptr)) == NULL){ // only for 1st pass
       // symbol unfound
       addSymbol(operand_ptr, 0, UNKNOWN);
-      val->type1 = UNKNOWN; // trick here: only 1 operand, but this lets me spec the label as K/U
     }
-    val->type1 = symbol_ptr->type;
+    val->type1 = symbol_ptr->type; // trick here: only 1 operand, but this lets me specify the label as K/U
     val->type0 = LABELTYPE;
     val->val0 = symbol_ptr->value;
     return 1;

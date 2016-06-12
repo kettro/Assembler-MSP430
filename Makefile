@@ -29,4 +29,4 @@ $(ODIR)/%.o:$(SDIR)/%.c
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 clean:
-	rm -f *.o *.lis *.asm *.s19 $(ODIR)/*.o
+	rm -f *.o *.lis *.s19 $(ODIR)/*.o

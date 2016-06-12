@@ -177,7 +177,6 @@ int handleLabel_1(char* label, char* operand)
       return 1; // update and we're done. no inc of LC
     }else{
       // standard directive; add the location counter, and then handle the directive
-      printf("lc = %x\n", location_counter);
       updateSymbol(symbol_ptr, location_counter);
       if(handleDir_1(command, argument) == 0){
         // END encountered

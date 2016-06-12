@@ -54,19 +54,18 @@ void triggerEmit(uint16_t lc)
     current_emit.initial_lc = lc;
     return;
   }
-  uint8_t checksum = ((current_emit.initial_lc) & 0xFF) + ((current_emit.initial_lc >> 8) & 0xFF);
+  uint8_t checksum = ((current_emit.initial_lc) & 0xFF);
+  checksum += ((current_emit.initial_lc >> 8) & 0xFF);
   uint8_t length = current_emit.index + 3;
   checksum += length;
-  checksum += ~(current_emit.checksum) & 0xFF;
+  checksum += current_emit.checksum;
+  checksum = (~checksum & 0xFF);
   fprintf(s19_file, "S1%02x%04x", length, current_emit.initial_lc);
   for(i = 0; i < current_emit.index; i++){
     fprintf(s19_file, "%02x", current_emit.message[i]);
   }
   fprintf(s19_file, "%02x\n", checksum);
 
-  // calculate the checksum of current_emit
-  // fprintf to the .s19 file
-  // clean the current emit buffer, set index to 0
   for(i = 0; i < MAX_EMIT_LENGTH; i++){
     current_emit.message[i] = '\0';
   }
@@ -74,8 +73,6 @@ void triggerEmit(uint16_t lc)
   current_emit.initial_lc = lc;
   current_emit.checksum = 0;
   return;
-  // set new location counter to lc
-  // return
 }
 
 /* Emit I
@@ -140,7 +137,7 @@ void emit_I(Inst* inst_ptr, OperandVal* src, OperandVal* dst, uint16_t lc)
     case JUMP:
       inst3.value = 0;
       inst3.value |= inst_ptr->opcode;
-      inst3.addr = (sval0 - (location_counter)) / 2; // using the LC, div by 2
+      inst3.addr = ((signed short)sval1 - ((signed short)location_counter)); // using the LC, div by 2
       emit_val = inst3.value & 0xFF;
       emit(emit_val, lc++);
       emit_val = (inst3.value >> 8) & 0xFF;

@@ -125,8 +125,9 @@ int parseOperands(char* operand, OperandVal* val)
           alphanum_ptr = strtok(NULL, ")");
           symbol_ptr = getSymbol(alphanum_ptr);
           if(symbol_ptr == NULL){
-            addSymbol(alphanum_ptr, 0, UNKNOWN); // add the symbol as an unknown if not found
-            symbol_ptr = getSymbol(alphanum_ptr);
+            error_count++;
+            fprintf(error_file, "Error: Indexed Addressing requires a Register index\n");
+            return 0;
           }
           val->type0 = REGISTER;
           val->val0 = symbol_ptr->value;

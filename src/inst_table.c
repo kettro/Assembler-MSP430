@@ -155,7 +155,7 @@ void handleInst_1(char* command, char* operands)
       parseType1(operands, &src);
       if(src.mode == BAD_ADDR){
         error_count++;
-        fprintf(error_file, "Error @%d: Bad Addressing mode, type 1\n", location_counter); 
+        fprintf(error_file, "Error @%x: Bad Addressing mode, type 1\n", location_counter); 
         // error: badd addr
         return;
       }
@@ -165,19 +165,19 @@ void handleInst_1(char* command, char* operands)
     case TWO:
       if(parseType2(operands, &src, &dst) == 0){
         error_count++;
-        fprintf(error_file, "Error @%d: Bad Addressing Mode, type 2\n", location_counter);
+        fprintf(error_file, "Error @%x: Bad Addressing Mode, type 2\n", location_counter);
         // error:
         return;
       }
       if(dst.mode == BAD_ADDR || src.mode == BAD_ADDR){
         error_count++;
         // error: bad addr
-        fprintf(error_file, "Error @%d: Bad Addressing Mode, type 2, dst\n", location_counter);
+        fprintf(error_file, "Error @%x: Bad Addressing Mode, type 2, dst\n", location_counter);
         return;
       }
       if(dst.mode == INDIRECT || dst.mode == INDIRECT_AA || dst.mode == IMMEDIATE){
         error_count++;
-        fprintf(error_file, "Error @%d: Improper Addressing Mode, type 2, dst\n", location_counter);
+        fprintf(error_file, "Error @%x: Improper Addressing Mode, type 2, dst\n", location_counter);
         // error: improper dst addr mode
         dst.mode = BAD_ADDR;
         return;
@@ -190,11 +190,11 @@ void handleInst_1(char* command, char* operands)
       if((location_counter % 2) != 0){
         // error: must be even
         error_count++;
-        fprintf(error_file, "Error @%d: location counter must be even for a JUMP\n", location_counter);
+        fprintf(error_file, "Error @%x: location counter must be even for a JUMP\n", location_counter);
       }
       if(parseType3(operands, &src) == 0){
         error_count++;
-        fprintf(error_file, "Error @%d: error in operands\n", location_counter);
+        fprintf(error_file, "Error @%x: error in operands\n", location_counter);
         // error in parsing
         return;
       }

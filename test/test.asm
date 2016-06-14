@@ -11,7 +11,7 @@ add @r6, &LOOP
 org $3000
 add label1,label2
 org $3050
-swpb label1(r1)
+swpb label1(r6)
 
 ; T4
 org $4000
@@ -20,6 +20,11 @@ swpb @r7+
 ; T5
 org $5000
 push #$1234
+
+;T6
+;org $5100
+;byte 450
+;swpb label1(label3)
 
 ; data section
 org $6000

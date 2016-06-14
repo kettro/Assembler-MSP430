@@ -129,7 +129,7 @@ void initSymbolTable(void)
   Root.name = NULL;
   Root.next = NULL;
   Root.value = 0;
-  addSymbol("ZERO", 0, KNOWN);
+  addSymbol("ZERO", 0, KNOWN); // a built-in for the language
 }
 
 int isLabel(char* token)
@@ -191,7 +191,7 @@ int handleLabel_1(char* label, char* operand)
   }
   else{
     error_count++;
-    fprintf(error_file, "Error @%d: Labels must be followed by an inst or dir\n", location_counter);
+    fprintf(error_file, "Error @%x: Labels must be followed by an inst or dir\n", location_counter);
     // error; must be either isnt or dir next
     return 1;
   }
@@ -206,7 +206,7 @@ int handleLabel_2(char* label, char* operand)
   Symbol* symbol_ptr = getSymbol(label);
   if(symbol_ptr->value != location_counter){
     error_count++;
-    fprintf(error_file, "Error @%d: an initial Label's value must match the LC\n", location_counter);
+    fprintf(error_file, "Error @%x: an initial Label's value must match the LC\n", location_counter);
     // error= a initial label must match the lc! 
     return 1;
   }

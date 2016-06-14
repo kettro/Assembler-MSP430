@@ -30,5 +30,10 @@ S1-05-4000-B710-F3
 
 S1-07-3012-3412-20
 
+## T6
+> Errors:
+> BYTE a value greater than 1 byte 
+> indexed addressing with a register
+
 ## Data Section
 S1-07-6000-06-07-08-09-7A

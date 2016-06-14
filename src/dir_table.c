@@ -106,7 +106,7 @@ int handleDir_1(char* command, char* operand)
   if(name == ASCII_D){
     if(*op_ptr != '\"'){
       error_count++;
-      fprintf(error_file, "Error @%d: ASCII operand must be in a string\n", location_counter);
+      fprintf(error_file, "Error @%x: ASCII operand must be in a string\n", location_counter);
       // error: ascii must be a string
       return 1;
     }else{ // op_ptr == ", count number of args in string
@@ -117,24 +117,24 @@ int handleDir_1(char* command, char* operand)
       }
       if(i == strlen(operand) || *op_ptr != '\"'){
         error_count++;
-        fprintf(error_file, "Error @%d: ASCII operand must have enclosed quotes\n", location_counter);
+        fprintf(error_file, "Error @%x: ASCII operand must have enclosed quotes\n", location_counter);
         // error: went too far 
         return 1;
       }
       *op_ptr = '\0'; // create a boundary at the last quote
       value = strlen(misc_ptr);
     }
-  }else{ // Not ascii: soome thing else
+  }else{ // Not ascii: some thing else
     if(parseDirOperand(dup_op, &val) == 0){
       error_count++;
-      fprintf(error_file, "Error @%d: Error encountered in op_parse\n", location_counter);
+      fprintf(error_file, "Error @%x: Error encountered in op_parse\n", location_counter);
       // error: error in op parse
       return 1;
     }
     if(&val != NULL){ // if no operands => ALIGN, or END
       if((val.type0 == LABELTYPE && val.type1 == UNKNOWN) && (name == ORG_D || name == BSS_D)){
         error_count++;
-        fprintf(error_file, "Error @%d: No Forward Declaration Allowed for BSS or ORG\n", location_counter);
+        fprintf(error_file, "Error @%x: No Forward Declaration Allowed for BSS or ORG\n", location_counter);
         // no forward declarations for org or bss
         // error
         return 1;
@@ -148,13 +148,13 @@ int handleDir_1(char* command, char* operand)
       return 0;
     case EQU_D:
       error_count++;
-      fprintf(error_file, "Error @%d: EQU must have a Label\n", location_counter);
+      fprintf(error_file, "Error @%x: EQU must have a Label\n", location_counter);
       // error
       return 1;
     case ALIGN_D:
       if(dup_op[0] != '\0'){ 
         error_count++;
-        fprintf(error_file, "Error @%d: No arguments allowed for ALIGN\n", location_counter);
+        fprintf(error_file, "Error @%x: No arguments allowed for ALIGN\n", location_counter);
         //error
         return 1;
       }
@@ -171,7 +171,7 @@ int handleDir_1(char* command, char* operand)
   }else if(name == BYTE_D){
     if((value & 0xFF) != value){ // check if 8 bit value
       error_count++;
-      fprintf(error_file, "Error @%d: BYTE operand not 8 bits\n", location_counter);
+      fprintf(error_file, "Error @%x: BYTE operand not 8 bits\n", location_counter);
       // error- not 8 bits! (or warning?)
     }else{
       location_counter += 1;
@@ -258,7 +258,7 @@ int handleDir_2(char* command, char* operand)
       strcpy(emit_array, ascii_str);
       break;
     default:
-      fprintf(error_file, "Error @%d: Directive not recognized\n", location_counter);
+      fprintf(error_file, "Error @%x: Directive not recognized\n", location_counter);
       //error
       return 1;
   }

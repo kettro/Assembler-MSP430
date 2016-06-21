@@ -17,6 +17,7 @@ int parseType3(char* operand, OperandVal* dst);
 // Extern Variables
 extern int error_count;
 extern FILE* error_file;
+extern uint16_t location_counter;
 // Extern Prototypes
 extern void addSymbol(char* name, uint16_t value, SymbolType type);
 extern Symbol* getSymbol(char* name);
@@ -37,19 +38,38 @@ int parseOperands(char* operand, OperandVal* val)
   Symbol* symbol_ptr;
   char* operand_ptr;
   char* alphanum_ptr;
-  int sanity;
+  int sanity = 0;
 
   operand_ptr = operand;
-
   switch(*operand_ptr)
   {
     case '&':{ // absolute addr;
+      operand_ptr++;
       val->mode = ABSOLUTE;
-      symbol_ptr = getSymbol(operand_ptr + 1);
+      symbol_ptr = getSymbol(operand_ptr);
+      if(symbol_ptr == NULL){
+        addSymbol(operand_ptr, 0, UNKNOWN);
+        symbol_ptr = getSymbol(operand_ptr);
+      }
       val->val0 = 2; // status register
       val->val1 = symbol_ptr->value;
       val->type0 = LABELTYPE;
       return 1;
+    }
+    case '$':{
+      operand_ptr++;
+      if(isdigit(*(operand_ptr))){
+        val->mode = ABSOLUTE;
+        val->val0 = 2;
+        val->val1 = 0x0000; // ensure it is 0x0000;
+        val->val1 += strtol(operand_ptr, NULL, 16);
+        val->type0 = KNOWN;
+        return 1;
+      }else{
+        val->mode = BAD_ADDR;
+        return 0;
+      }
+
     }
     case '@':{
       operand_ptr++;
@@ -94,11 +114,12 @@ int parseOperands(char* operand, OperandVal* val)
         }
         val->val0 = symbol_ptr->value;
       }else{ // constant
+        val->val1 = 0x0000;
         if(*operand_ptr == '$'){ // hex
           operand_ptr++;
-          val->val1 = strtol(operand_ptr, NULL, 16); // allows for #$FFFF, for example
+          val->val1 += strtol(operand_ptr, NULL, 16); // allows for #$FFFF, for example
         }else{ // non-hex, decimal
-          val->val1 = strtol(operand_ptr, NULL, 10); // allows for both -# && +#
+          val->val1 += strtol(operand_ptr, NULL, 10); // allows for both -# && +#
         }
       }
       val->mode = IMMEDIATE;
@@ -124,7 +145,7 @@ int parseOperands(char* operand, OperandVal* val)
           val->val1 = symbol_ptr->value;
           alphanum_ptr = strtok(NULL, ")");
           symbol_ptr = getSymbol(alphanum_ptr);
-          if(symbol_ptr == NULL){
+          if(symbol_ptr == NULL || symbol_ptr->type != REGISTER){
             error_count++;
             fprintf(error_file, "Error: Indexed Addressing requires a Register index\n");
             return 0;
@@ -146,13 +167,11 @@ int parseOperands(char* operand, OperandVal* val)
             val->val0 = symbol_ptr->value;
             return 1;
           case LABELTYPE:
+          case UNKNOWN:
             val->mode = RELATIVE;
             val->type0 = LABELTYPE;
             val->val0 = 0;
-            val->val1 = symbol_ptr->value;
-            return 1;
-          case UNKNOWN:
-            // error, sort of
+            val->val1 = symbol_ptr->value - location_counter; // or is it LC+2 + op?
             return 1;
         }
       }
@@ -191,13 +210,14 @@ int parseDirOperand(char* operand, OperandVal* val)
     val->val0 = symbol_ptr->value;
     return 1;
   }else if(*operand_ptr == '$'){ // hex
-      val->val0 = strtol(operand_ptr + 1, NULL, 16);
-      val->type0 = KNOWN;
-      return 1;
+    val->val0 = 0x0000; // ensure 16-bits
+    val->val0 += strtol(operand_ptr + 1, NULL, 16);
+    val->type0 = KNOWN;
+    return 1;
   }else if(isdigit(*operand_ptr)){ // decimal
-      val->val0 = strtol(operand_ptr, NULL, 10);
-      val->type0 = KNOWN;
-      return 1;
+    val->val0 = strtol(operand_ptr, NULL, 10);
+    val->type0 = KNOWN;
+    return 1;
   }
     // must be an error
   val->mode = BAD_ADDR;
@@ -282,11 +302,6 @@ int parseType3(char* operand, OperandVal* dst)
     //error
     return 0;
   }
-  /*if(!strtok(NULL, " ;\n\t\r")){
-    // error: too many operands.
-    fprintf(error_file, "Error: too many operands in type 3 argument\n");
-    return 0;
-  }*/
   if(parseOperands(op1_ptr, dst) == 0){
     // error: some addr garbage or whatever
     return 0;

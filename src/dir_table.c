@@ -251,6 +251,7 @@ int handleDir_2(char* command, char* operand)
       break;
     case WORD_D:
       // double check the endedness of the msp
+      ascii_length = 2;
       emit_array[0] = value & 0xFF;
       emit_array[1] = (value >> 8) & 0xFF;
       break;

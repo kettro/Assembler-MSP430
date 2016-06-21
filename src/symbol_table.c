@@ -152,6 +152,10 @@ int handleLabel_1(char* label, char* operand)
     addSymbol(label, 0, UNKNOWN); // add the symbol as an unknown if not found initially
     symbol_ptr = getSymbol(label);
   }
+  if(*operand == '\0'){ // no operand = bare symbol
+    updateSymbol(symbol_ptr, location_counter);
+    return 1;
+  }
   char dup[strlen(operand)];
   strcpy(dup, operand);
   char* command = strtok(dup, " \t\n\r;"); // shouldn't be needed, but being safe
@@ -201,14 +205,15 @@ int handleLabel_1(char* label, char* operand)
 int handleLabel_2(char* label, char* operand)
 {
   // handle labels in 2nd pass: aka, skip.
+  if(*operand == '\0'){
+    return 1;
+  }
   char dup[strlen(operand)];
   strcpy(dup, operand);
   Symbol* symbol_ptr = getSymbol(label);
   if(symbol_ptr->value != location_counter){
-    error_count++;
-    fprintf(error_file, "Error @%x: an initial Label's value must match the LC\n", location_counter);
+    fprintf(error_file, "Warning @%x: an initial Label's value must match the LC\n", location_counter);
     // error= a initial label must match the lc! 
-    return 1;
   }
   char* command = strtok(dup, " \n\r\t");
   char* argument = strtok(NULL, "\n\r\t");
